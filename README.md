@@ -86,7 +86,7 @@ Prettier handles formatting; `npm run lint` and `npm run format:check` check wit
 changing files. Both checks also run in CI through `make test`.
 
 Go checks use golangci-lint v2.13.2 with `errcheck`, `govet`, `ineffassign`,
-`staticcheck`, `unused`, and `gofmt`. Install the same version used in CI with the
+`staticcheck`, `unused`, `gofmt`, and `goimports`. Install the same version used in CI with the
 [official binary installer](https://golangci-lint.run/docs/welcome/install/local/):
 
 ```sh
@@ -94,7 +94,7 @@ curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b "$(go env GOPATH)/
 ```
 
 Add `$(go env GOPATH)/bin` to your `PATH`, then run `make lint-go` or `make test`.
-Use `golangci-lint fmt` to format Go files. Go checks run on both CI platforms and
+Use `golangci-lint fmt` to format Go files and organize imports. Go checks run on both CI platforms and
 before releases through `make test`.
 
 The checks use temporary repositories and cover staging, revision comparisons,

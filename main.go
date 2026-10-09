@@ -33,14 +33,17 @@ func run() int {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
 	if terminalMode(args) {
 		return passthrough(ctx, args)
 	}
+
 	// Git implicitly uses --no-index outside a repository. Keep that comparison
 	// and its exit status in the terminal, just like explicit --no-index.
 	if err := gitCommand(ctx, "rev-parse", "--git-dir").Run(); err != nil {
 		return passthrough(ctx, args)
 	}
+
 	snapshot, raw, err := capture(ctx, args)
 	if err != nil {
 		if e, ok := err.(*exec.ExitError); ok {
