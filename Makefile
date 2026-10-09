@@ -1,4 +1,4 @@
-.PHONY: frontend build test browser-test release clean
+.PHONY: frontend build lint-go test browser-test release clean
 
 frontend:
 	npm ci
@@ -8,7 +8,11 @@ build: frontend
 	mkdir -p bin
 	CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/diff-punk .
 
-test: build
+lint-go: frontend
+	golangci-lint config verify
+	golangci-lint run ./...
+
+test: build lint-go
 	npm run lint
 	npm run format:check
 	npm run typecheck

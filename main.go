@@ -75,7 +75,8 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	if err != nil {
 		return err
 	}
-	defer listener.Close()
+	// Serve closes the listener; also clean up if setup fails before Serve starts.
+	defer func() { _ = listener.Close() }()
 	var token [16]byte
 	if _, err := rand.Read(token[:]); err != nil {
 		return err
