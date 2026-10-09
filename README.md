@@ -74,9 +74,15 @@ without launching a browser (useful for tests or a headless environment).
 ## Development and checks
 
 ```sh
-make test                 # build, typecheck, Go race tests, DOM and CLI checks
+make test                 # build, lint, format, typecheck, Go race, DOM and CLI checks
 make browser-test         # install Chromium and run browser integration checks
+npm run lint:fix          # fix automatically correctable ESLint issues
+npm run format            # format JS/TS, CSS, HTML, JSON, Markdown, and YAML
 ```
+
+ESLint checks the frontend TypeScript and Node.js scripts with recommended rules.
+Prettier handles formatting; `npm run lint` and `npm run format:check` check without
+changing files. Both checks also run in CI through `make test`.
 
 The checks use temporary repositories and cover staging, revision comparisons,
 path filters, renames, deletion, binary files, deterministic pairing, frozen

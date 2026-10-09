@@ -9,6 +9,8 @@ build: frontend
 	CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/diff-punk .
 
 test: build
+	npm run lint
+	npm run format:check
 	npm run typecheck
 	go test -race ./...
 	npm run test:dom
