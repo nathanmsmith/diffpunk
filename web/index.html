@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>diffthing</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/main.css">
+  <script type="module" src="./assets/main.js"></script>
+</head>
+<body>
+  <header class="toolbar">
+    <a class="brand" href="#">diffthing<span class="brand-dot">.</span></a>
+    <div class="repository" id="repository"></div>
+    <div class="layouts" role="group" aria-label="Diff layout">
+      <button id="split" aria-pressed="true">Side-by-side</button>
+      <button id="unified" aria-pressed="false">Unified</button>
+    </div>
+  </header>
+  <div class="workspace">
+    <aside>
+      <div class="sidebar-label">CHANGED FILES <span id="file-count"></span></div>
+      <nav id="files" aria-label="Changed files"></nav>
+      <div class="snapshot-label" id="snapshot-time"></div>
+    </aside>
+    <main id="diffs" aria-label="Diffs">
+      <div class="empty" id="loading">Loading diff…</div>
+    </main>
+  </div>
+</body>
+</html>

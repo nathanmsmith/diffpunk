@@ -1,0 +1,21 @@
+{
+  "name": "diffthing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test:browser": "node scripts/browser-test.mjs",
+    "test:dom": "node scripts/dom-test.mjs",
+    "test:cli": "node scripts/cli-test.mjs"
+  },
+  "dependencies": {
+    "@pierre/diffs": "1.5.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "happy-dom": "^20.14.6",
+    "playwright": "^1.56.0",
+    "typescript": "^5.9.0"
+  }
+}
