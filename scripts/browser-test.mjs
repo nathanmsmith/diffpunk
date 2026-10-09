@@ -6,8 +6,8 @@ import { resolve, join } from 'node:path';
 import { once } from 'node:events';
 import { chromium, firefox } from 'playwright';
 
-const binary = resolve('bin/diffthing');
-const fixture = await mkdtemp(join(tmpdir(), 'diffthing-browser-'));
+const binary = resolve('bin/diff-punk');
+const fixture = await mkdtemp(join(tmpdir(), 'diff-punk-browser-'));
 const git = (...args) => execFileSync('git', args, { cwd: fixture, encoding: 'utf8' });
 const write = (name, body) => writeFile(join(fixture, name), body);
 let server, browser;
@@ -33,7 +33,7 @@ try {
   git('mv', 'old.txt', 'renamed.txt');
   await write('added.ts', 'const added = "<script>alert(1)</script>";\n');
   git('add', 'added.ts');
-  server = spawn(binary, ['HEAD'], { cwd: fixture, env: { ...process.env, DIFFTHING_NO_OPEN: '1' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  server = spawn(binary, ['HEAD'], { cwd: fixture, env: { ...process.env, DIFF_PUNK_NO_OPEN: '1' }, stdio: ['ignore', 'pipe', 'pipe'] });
   const url = await new Promise((resolveURL, reject) => {
     let output = '';
     const timeout = setTimeout(() => reject(new Error(`Server did not start: ${output}`)), 15000);
@@ -50,7 +50,7 @@ try {
   assert.ok(order.indexOf('foo.test.ts') < order.indexOf('src/deep/bar.ts'));
   // Later edits must not leak into the browser's full-file view.
   await write('foo.ts', '// EDITED_AFTER_SNAPSHOT\n');
-  browser = await (process.env.DIFFTHING_TEST_BROWSER === 'firefox' ? firefox : chromium).launch({ headless: true });
+  browser = await (process.env.DIFF_PUNK_TEST_BROWSER === 'firefox' ? firefox : chromium).launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = [];
   const external = [];

@@ -1,14 +1,14 @@
-# diffthing
+# diff punk
 
 A local, read-only browser viewer for `git diff`. Run the standalone executable
 with the same arguments you would pass to Git:
 
 ```sh
-diffthing                    # unstaged changes
-diffthing --staged           # staged changes
-diffthing HEAD              # working tree compared with HEAD
-diffthing main...HEAD        # branch changes since the merge base
-diffthing -U10 -- src/       # more context, limited to a path
+diff-punk                    # unstaged changes
+diff-punk --staged           # staged changes
+diff-punk HEAD               # working tree compared with HEAD
+diff-punk main...HEAD        # branch changes since the merge base
+diff-punk -U10 -- src/       # more context, limited to a path
 ```
 
 The command opens your default browser and keeps a local server running. Press
@@ -32,7 +32,7 @@ ambiguous tests remain unpaired. Unpaired tests come last, sorted by depth and p
 
 Release builds are standalone executables for macOS and Linux, on ARM64 and x86-64.
 Download the appropriate archive from this repository's GitHub Releases, verify
-its checksum, extract it, and put `diffthing` on your `PATH`. Git must be installed;
+its checksum, extract it, and put `diff-punk` on your `PATH`. Git must be installed;
 Go and Node.js are only needed to build from source.
 
 ## Build from source
@@ -41,7 +41,7 @@ Requires Go 1.24+, Node.js 24+, npm, Git, and Make:
 
 ```sh
 make build
-./bin/diffthing
+./bin/diff-punk
 ```
 
 The frontend uses plain TypeScript and `@pierre/diffs`. Go embeds the production
@@ -50,7 +50,7 @@ loads everything locally and needs no internet connection at runtime.
 
 ## Git compatibility
 
-Git computes the patches; diffthing controls their transport prefixes and disables
+Git computes the patches; diff punk controls their transport prefixes and disables
 terminal color for browser rendering. Normal patch options, revisions, whitespace
 filters, diff algorithms, and pathspecs retain Git's selection behavior.
 
@@ -59,7 +59,7 @@ formats (`--raw`, `--word-diff`, `--binary`, combined diffs, external diff tools
 custom prefixes, and `--no-index`) stay in the terminal. `--quiet` and
 `--exit-code` also pass through, preserving Git's output and exit status.
 Unrecognized patch formats fall back to text output. `--help` invokes Git's diff
-help; `--version` prints the diffthing version.
+help; `--version` prints the diff punk version.
 
 Full-file context is captured with a second Git invocation before the server
 starts. Keep files stable during startup for the patch and expanded context to
@@ -68,7 +68,7 @@ no special limits in v1. Untracked files follow Git's normal behavior and are no
 included unless you use `git add -N` first.
 
 On Linux, opening the default browser uses `xdg-open`. If opening fails, the
-terminal prints a URL you can open manually. Set `DIFFTHING_NO_OPEN=1` to run
+terminal prints a URL you can open manually. Set `DIFF_PUNK_NO_OPEN=1` to run
 without launching a browser (useful for tests or a headless environment).
 
 ## Development and checks

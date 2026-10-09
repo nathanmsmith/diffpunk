@@ -22,7 +22,7 @@ func testRepo(t *testing.T) string {
 	}
 	t.Cleanup(func() { _ = os.Chdir(old) })
 	gitTest(t, "init", "-q")
-	gitTest(t, "config", "user.name", "Diffthing Test")
+	gitTest(t, "config", "user.name", "Diff Punk Test")
 	gitTest(t, "config", "user.email", "test@example.invalid")
 	gitTest(t, "config", "commit.gpgsign", "false")
 	gitTest(t, "config", "core.autocrlf", "false")

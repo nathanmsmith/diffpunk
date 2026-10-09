@@ -18,7 +18,7 @@ import (
 	"syscall"
 	"time"
 
-	"diffthing/internal/viewer"
+	"diff-punk/internal/viewer"
 )
 
 var version = "dev"
@@ -28,7 +28,7 @@ func main() { os.Exit(run()) }
 func run() int {
 	args := os.Args[1:]
 	if len(args) == 1 && args[0] == "--version" {
-		fmt.Println("diffthing", version)
+		fmt.Println("diff punk", version)
 		return 0
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -46,7 +46,7 @@ func run() int {
 		if e, ok := err.(*exec.ExitError); ok {
 			return e.ExitCode()
 		}
-		fmt.Fprintln(os.Stderr, "diffthing:", err)
+		fmt.Fprintln(os.Stderr, "diff punk:", err)
 		return 1
 	}
 	if raw != "" {
@@ -57,7 +57,7 @@ func run() int {
 		return 0
 	}
 	if err := serve(ctx, snapshot); err != nil {
-		fmt.Fprintln(os.Stderr, "diffthing:", err)
+		fmt.Fprintln(os.Stderr, "diff punk:", err)
 		return 1
 	}
 	return 0
@@ -89,10 +89,10 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	}
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
-	fmt.Fprintf(os.Stderr, "diffthing: %s\nPress Ctrl-C to stop.\n", url)
-	if os.Getenv("DIFFTHING_NO_OPEN") != "1" {
+	fmt.Fprintf(os.Stderr, "diff punk: %s\nPress Ctrl-C to stop.\n", url)
+	if os.Getenv("DIFF_PUNK_NO_OPEN") != "1" {
 		if err := openBrowser(url); err != nil {
-			fmt.Fprintln(os.Stderr, "diffthing: could not open browser; open the URL above:", err)
+			fmt.Fprintln(os.Stderr, "diff punk: could not open browser; open the URL above:", err)
 		}
 	}
 	select {
@@ -148,7 +148,7 @@ func openBrowser(url string) error {
 	}
 	go func() {
 		if err := cmd.Wait(); err != nil {
-			fmt.Fprintln(os.Stderr, "diffthing: browser launcher failed; open the printed URL:", err)
+			fmt.Fprintln(os.Stderr, "diff punk: browser launcher failed; open the printed URL:", err)
 		}
 	}()
 	return nil

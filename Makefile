@@ -6,7 +6,7 @@ frontend:
 
 build: frontend
 	mkdir -p bin
-	CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/diffthing .
+	CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/diff-punk .
 
 test: build
 	npm run typecheck

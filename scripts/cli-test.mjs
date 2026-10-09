@@ -6,9 +6,9 @@ import { resolve, join } from 'node:path';
 import { once } from 'node:events';
 import { request } from 'node:http';
 
-const binary = resolve('bin/diffthing');
-const fixture = await mkdtemp(join(tmpdir(), 'diffthing-cli-'));
-const outside = await mkdtemp(join(tmpdir(), 'diffthing-files-'));
+const binary = resolve('bin/diff-punk');
+const fixture = await mkdtemp(join(tmpdir(), 'diff-punk-cli-'));
+const outside = await mkdtemp(join(tmpdir(), 'diff-punk-files-'));
 const git = (...args) => execFileSync('git', args, { cwd: fixture, encoding: 'utf8' });
 const run = (program, args) => spawnSync(program, args, { cwd: fixture, encoding: 'utf8' });
 let server;
@@ -27,8 +27,8 @@ try {
     assert.equal(actual.status, expected.status, `${args}: exit status differs`);
     assert.equal(actual.stdout, expected.stdout, `${args}: output differs`);
   }
-  const bad = run(binary, ['--unknown-diffthing-option']);
-  assert.equal(bad.status, run('git', ['diff', '--unknown-diffthing-option']).status);
+  const bad = run(binary, ['--unknown-diff-punk-option']);
+  assert.equal(bad.status, run('git', ['diff', '--unknown-diff-punk-option']).status);
   await writeFile(join(fixture, 'left.txt'), 'left\n');
   await writeFile(join(fixture, 'right.txt'), 'right\n');
   const noIndexArgs = ['--no-color', '--no-index', 'left.txt', 'right.txt'];
@@ -46,11 +46,11 @@ try {
   const launchers = join(fixture, 'launchers');
   await mkdir(launchers);
   for (const name of ['open', 'xdg-open']) {
-    await writeFile(join(launchers, name), '#!/bin/sh\nprintf "%s" "$1" > "$DIFFTHING_BROWSER_LOG"\n', { mode: 0o755 });
+    await writeFile(join(launchers, name), '#!/bin/sh\nprintf "%s" "$1" > "$DIFF_PUNK_BROWSER_LOG"\n', { mode: 0o755 });
   }
   const browserLog = join(fixture, 'browser-url');
-  const env = { ...process.env, PATH: `${launchers}:${process.env.PATH}`, DIFFTHING_BROWSER_LOG: browserLog };
-  delete env.DIFFTHING_NO_OPEN;
+  const env = { ...process.env, PATH: `${launchers}:${process.env.PATH}`, DIFF_PUNK_BROWSER_LOG: browserLog };
+  delete env.DIFF_PUNK_NO_OPEN;
   server = spawn(binary, [], { cwd: fixture, env, stdio: ['ignore', 'pipe', 'pipe'] });
   const url = await new Promise((resolveURL, reject) => {
     let output = '';

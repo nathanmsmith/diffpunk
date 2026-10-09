@@ -57,7 +57,7 @@ func passthrough(ctx context.Context, args []string) int {
 		if e, ok := err.(*exec.ExitError); ok {
 			return e.ExitCode()
 		}
-		fmt.Fprintln(os.Stderr, "diffthing:", err)
+		fmt.Fprintln(os.Stderr, "diff punk:", err)
 		return 1
 	}
 	return 0
@@ -117,7 +117,7 @@ func capture(ctx context.Context, args []string) (*Snapshot, string, error) {
 			}
 		}
 	} else {
-		fmt.Fprintln(os.Stderr, "diffthing: full-file context unavailable:", strings.TrimSpace(fullErr.String()))
+		fmt.Fprintln(os.Stderr, "diff punk: full-file context unavailable:", strings.TrimSpace(fullErr.String()))
 	}
 	captureMetadataContents(ctx, args, files)
 	rootCmd := gitCommand(ctx, "rev-parse", "--show-toplevel")

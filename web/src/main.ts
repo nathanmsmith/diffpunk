@@ -118,7 +118,7 @@ try {
   document.getElementById('repository')!.title = snapshot.repository;
   document.getElementById('file-count')!.textContent = String(snapshot.files.length);
   document.getElementById('snapshot-time')!.textContent = `Snapshot · ${new Date(snapshot.createdAt).toLocaleTimeString()}\n git diff ${snapshot.arguments.join(' ')}`;
-  document.title = `${snapshot.repository.split('/').at(-1)} · diffthing`;
+  document.title = `${snapshot.repository.split('/').at(-1)} · diff punk`;
   snapshot.files.forEach(addFile);
   if (snapshot.files.length === 0) root.append(textElement('div', 'No changes.', 'empty'));
 } catch (err) {
