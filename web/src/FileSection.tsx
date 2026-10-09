@@ -3,15 +3,13 @@ import { processFile, type FileDiffMetadata } from '@pierre/diffs';
 import { File, FileDiff } from '@pierre/diffs/react';
 import type { FileSnapshot, ViewOptions } from './types';
 
-export function FileSection({
-  file,
-  index,
-  options,
-}: {
+interface Props {
   file: FileSnapshot;
   index: number;
   options: ViewOptions;
-}) {
+}
+
+export function FileSection({ file, index, options }: Props) {
   const patch = useMemo(() => {
     try {
       return processFile(file.patch, {

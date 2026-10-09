@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import type { Snapshot } from './types';
 
+interface Props {
+  snapshot?: Snapshot;
+}
+
 const statuses: Record<string, string> = {
   added: 'A',
   deleted: 'D',
@@ -8,7 +12,7 @@ const statuses: Record<string, string> = {
   copied: 'C',
 };
 
-export function Sidebar({ snapshot }: { snapshot?: Snapshot }) {
+export function Sidebar({ snapshot }: Props) {
   const [activeFile, setActiveFile] = useState<number>();
   return (
     <aside>

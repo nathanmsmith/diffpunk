@@ -1,16 +1,18 @@
 import type { Layout } from './types';
 
+interface Props {
+  repository: string;
+  repositoryPath?: string;
+  layout: Layout;
+  onLayoutChange: (layout: Layout) => void;
+}
+
 export function Toolbar({
   repository,
   repositoryPath,
   layout,
   onLayoutChange,
-}: {
-  repository: string;
-  repositoryPath?: string;
-  layout: Layout;
-  onLayoutChange: (layout: Layout) => void;
-}) {
+}: Props) {
   return (
     <header className="toolbar">
       <a className="brand" href="#">
