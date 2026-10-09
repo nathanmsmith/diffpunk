@@ -7,11 +7,11 @@ import tseslint from 'typescript-eslint';
 export default defineConfig([
   globalIgnores(['bin/**', 'release/**', 'internal/viewer/dist/**']),
   {
-    files: ['**/*.{js,mjs,cjs,ts}'],
+    files: ['**/*.{js,mjs,cjs,ts,tsx}'],
     extends: [js.configs.recommended],
   },
   {
-    files: ['web/src/**/*.ts'],
+    files: ['web/src/**/*.{ts,tsx}'],
     extends: [tseslint.configs.recommended],
     languageOptions: { globals: globals.browser },
   },

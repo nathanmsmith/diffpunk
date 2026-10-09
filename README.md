@@ -44,7 +44,7 @@ make build
 ./bin/diff-punk
 ```
 
-The frontend uses plain TypeScript and `@pierre/diffs`. Go embeds the production
+The frontend uses React, TypeScript, and `@pierre/diffs`. Go embeds the production
 HTML, JavaScript, CSS, syntax grammars, themes, and third-party licenses. The viewer
 loads everything locally and needs no internet connection at runtime.
 
@@ -81,7 +81,7 @@ npm run lint:fix          # fix automatically correctable ESLint issues
 npm run format            # format JS/TS, CSS, HTML, JSON, Markdown, and YAML
 ```
 
-ESLint checks the frontend TypeScript and Node.js scripts with recommended rules.
+ESLint checks the frontend TypeScript/TSX and Node.js scripts with recommended rules.
 Prettier handles formatting; `npm run lint` and `npm run format:check` check without
 changing files. Both checks also run in CI through `make test`.
 

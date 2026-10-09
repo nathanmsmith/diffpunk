@@ -14,10 +14,14 @@
     "test:cli": "node scripts/cli-test.mjs"
   },
   "dependencies": {
-    "@pierre/diffs": "1.5.2"
+    "@pierre/diffs": "1.5.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "esbuild": "^0.25.0",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",

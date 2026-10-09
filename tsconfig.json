@@ -5,8 +5,9 @@
     "moduleResolution": "Bundler",
     "lib": ["ES2022", "DOM"],
     "strict": true,
+    "jsx": "react-jsx",
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["web/src/**/*.ts"]
+  "include": ["web/src/**/*.ts", "web/src/**/*.tsx"]
 }

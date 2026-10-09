@@ -14,7 +14,7 @@ await rm(out, { recursive: true, force: true });
 await mkdir(`${out}/assets`, { recursive: true });
 await writeFile(`${out}/.gitkeep`, '');
 await build({
-  entryPoints: ['web/src/main.ts'],
+  entryPoints: ['web/src/main.tsx'],
   outdir: `${out}/assets`,
   bundle: true,
   splitting: true,
