@@ -65,7 +65,7 @@ function addFile(file: FileSnapshot, index: number) {
     if (file.fullContent !== undefined) {
       const expand = textElement('button', 'Show full file');
       expand.setAttribute('aria-expanded', 'false');
-      const host = document.createElement('div');
+      const host = document.createElement('diffs-container');
       host.className = 'diff-host';
       host.hidden = true;
       section.append(host);
@@ -85,7 +85,7 @@ function addFile(file: FileSnapshot, index: number) {
     }
     return;
   }
-  const host = document.createElement('div');
+  const host = document.createElement('diffs-container');
   host.className = 'diff-host';
   section.append(host);
   const instance = new FileDiff(options());

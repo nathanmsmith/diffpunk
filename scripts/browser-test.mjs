@@ -63,6 +63,30 @@ try {
   await foo.locator('pre').filter({ hasText: 'value14 = 140' }).waitFor();
   assert.match(await foo.locator('pre').innerText(), /value14 = 140/);
   assert.doesNotMatch(await foo.locator('pre').innerText(), /TOP_CONTEXT/);
+  async function assertHighlighting() {
+    await foo.locator('span[style*="--diffs-token-light"]').first().waitFor();
+    await page.waitForFunction(() => {
+      const shadow = document.querySelector('section[data-path="foo.ts"] .diff-host')?.shadowRoot;
+      const spans = shadow?.querySelectorAll('span[style*="--diffs-token-light"]');
+      return spans && new Set([...spans].map(span => getComputedStyle(span).color)).size > 1;
+    });
+    const colors = await foo.locator('.diff-host').evaluate(host => {
+      const shadow = host.shadowRoot;
+      const addition = shadow.querySelector('[data-line][data-line-type="change-addition"]');
+      const deletion = shadow.querySelector('[data-line][data-line-type="change-deletion"]');
+      return {
+        addition: getComputedStyle(addition).backgroundColor,
+        deletion: getComputedStyle(deletion).backgroundColor,
+        stylesheets: shadow.adoptedStyleSheets.length,
+      };
+    });
+    assert.equal(colors.stylesheets, 1, 'Diff stylesheet is missing');
+    assert.notEqual(colors.addition, colors.deletion, 'Addition and deletion colors are identical');
+    for (const color of [colors.addition, colors.deletion]) {
+      assert.ok(color !== 'transparent' && color !== 'rgba(0, 0, 0, 0)', 'Diff background is transparent');
+    }
+  }
+  await assertHighlighting();
   await foo.getByRole('button', { name: 'Show full file', exact: true }).click();
   await foo.locator('pre').filter({ hasText: 'TOP_CONTEXT' }).waitFor();
   assert.match(await foo.locator('pre').innerText(), /TOP_CONTEXT/);
@@ -84,6 +108,7 @@ try {
   assert.match(await page.locator('section[data-path="deleted.txt"]').innerText(), /deleted/);
   await page.screenshot({ path: 'bin/viewer.png', fullPage: true });
   await page.emulateMedia({ colorScheme: 'dark' });
+  await assertHighlighting();
   await page.screenshot({ path: 'bin/viewer-dark.png', fullPage: true });
   await page.setViewportSize({ width: 600, height: 800 });
   await page.reload();

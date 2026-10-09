@@ -39,6 +39,11 @@ try {
   assert.ok(pre(), 'Diff library did not render');
   assert.match(pre().textContent, /const value = 2/);
   assert.doesNotMatch(pre().textContent, /TOP_CONTEXT/);
+  const shadow = section.querySelector('.diff-host').shadowRoot;
+  assert.equal(shadow.adoptedStyleSheets.length, 1, 'Diff stylesheet is missing');
+  await waitFor(() => pre().querySelector('span[style*="--diffs-token-light"]'));
+  const tokenColors = new Set([...pre().querySelectorAll('span[style*="--diffs-token-light"]')].map(span => span.style.getPropertyValue('--diffs-token-light')));
+  assert.ok(tokenColors.size > 1, 'Syntax tokens have no distinct colors');
   const button = section.querySelector('button');
   button.click();
   await waitFor(() => pre()?.textContent.includes('TOP_CONTEXT'));
@@ -61,12 +66,13 @@ try {
   rename.querySelector('button').click();
   await waitFor(() => rename.querySelector('.diff-host').shadowRoot?.textContent.includes('unchanged rename'));
   assert.equal(rename.querySelector('.file-summary').hidden, true);
+  assert.equal(rename.querySelector('.diff-host').shadowRoot.adoptedStyleSheets.length, 1, 'Full-file stylesheet is missing');
   rename.querySelector('button').click();
   assert.equal(rename.querySelector('.file-summary').hidden, false);
   assert.equal(window.document.querySelectorAll('section').length, 3);
   assert.match(window.document.querySelector('section[data-path="binary.dat"]').textContent, /Binary file changed/);
   assert.equal(window.document.querySelectorAll('.file-header img').length, 0, 'Filename interpreted as HTML');
-  console.log('DOM checks passed: actual diff rendering, full-file expansion/collapse, layout toggle, binary summary, escaped filenames.');
+  console.log('DOM checks passed: diff stylesheet, syntax colors, actual diff rendering, full-file expansion/collapse, layout toggle, binary summary, escaped filenames.');
 } finally {
   await window.happyDOM.abort();
 }
