@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import type { Layout } from './types';
 
 interface Props {
@@ -19,8 +20,29 @@ export function Toolbar({
   showUntracked,
   onUntrackedChange,
 }: Props) {
+  const toolbarRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    const toolbar = toolbarRef.current;
+    if (!toolbar) return;
+
+    const updateHeight = () => {
+      document.documentElement.style.setProperty(
+        '--toolbar-height',
+        `${toolbar.getBoundingClientRect().height}px`,
+      );
+    };
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(toolbar);
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty('--toolbar-height');
+    };
+  }, []);
+
   return (
-    <header className="toolbar">
+    <header className="toolbar" ref={toolbarRef}>
       <a className="brand" href="#">
         diff punk
       </a>
