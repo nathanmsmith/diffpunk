@@ -121,6 +121,16 @@ try {
       reject(new Error(`Unexpected exit ${code}: ${output}`));
     });
   });
+  assert.equal(new URL(url).port, '5555');
+  const occupied = spawnSync(binary, [], {
+    cwd: fixture,
+    env: { ...env, DIFF_PUNK_NO_OPEN: '1' },
+    encoding: 'utf8',
+    timeout: 10000,
+  });
+  assert.equal(occupied.error, undefined);
+  assert.equal(occupied.status, 1);
+  assert.match(occupied.stderr, /listen tcp 127\.0\.0\.1:5555:/);
   const snapshot = await (await fetch(`${url}snapshot.json`)).json();
   const tracked = snapshot.files.filter((file) => file.kind !== 'untracked');
   assert.equal(tracked.length, 1);

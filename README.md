@@ -12,7 +12,8 @@ diff-punk main...HEAD        # branch changes since the merge base
 diff-punk -U10 -- src/       # more context, limited to a path
 ```
 
-The command opens your default browser and keeps a local server running. Press
+The command opens your default browser and keeps a local server running on
+`127.0.0.1:5555`. If port 5555 is already in use, startup fails. Press
 **Ctrl-C** in the terminal to stop it. Each invocation captures a snapshot;
 subsequent edits do not change the viewer. An empty diff exits immediately unless eligible untracked files are present.
 

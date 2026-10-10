@@ -74,7 +74,7 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	if _, err := fs.Stat(assetFS, "index.html"); err != nil {
 		return fmt.Errorf("viewer assets missing; run npm run build before go build")
 	}
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	listener, err := net.Listen("tcp", "127.0.0.1:5555")
 	if err != nil {
 		return err
 	}
