@@ -1,4 +1,4 @@
-package viewer
+package assets
 
 import "embed"
 

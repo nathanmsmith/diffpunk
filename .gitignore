@@ -1,5 +1,5 @@
 node_modules/
 bin/
 release/
-internal/viewer/dist/*
-!internal/viewer/dist/.gitkeep
+assets/dist/*
+!assets/dist/.gitkeep

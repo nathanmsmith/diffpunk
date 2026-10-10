@@ -10,7 +10,7 @@ for task_target_os in darwin linux; do
     CGO_ENABLED=0 GOOS="$task_target_os" GOARCH="$task_target_arch" \
       go build -trimpath -ldflags="-s -w -X main.version=$version" -o "$task_release_dir/diff-punk" .
     cp README.md "$task_release_dir/README.md"
-    cp internal/viewer/dist/THIRD_PARTY_LICENSES.txt "$task_release_dir/THIRD_PARTY_LICENSES.txt"
+    cp assets/dist/THIRD_PARTY_LICENSES.txt "$task_release_dir/THIRD_PARTY_LICENSES.txt"
     tar -czf "release/$task_release_name.tar.gz" -C "$task_release_dir" .
     rm -rf "$task_release_dir"
   done

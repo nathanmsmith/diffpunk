@@ -18,7 +18,7 @@ import (
 	"syscall"
 	"time"
 
-	"diff-punk/internal/viewer"
+	"diff-punk/assets"
 )
 
 var version = "dev"
@@ -67,11 +67,11 @@ func run() int {
 }
 
 func serve(ctx context.Context, snapshot *Snapshot) error {
-	assets, err := fs.Sub(viewer.Assets, "dist")
+	assetFS, err := fs.Sub(assets.Assets, "dist")
 	if err != nil {
 		return err
 	}
-	if _, err := fs.Stat(assets, "index.html"); err != nil {
+	if _, err := fs.Stat(assetFS, "index.html"); err != nil {
 		return fmt.Errorf("viewer assets missing; run npm run build before go build")
 	}
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -88,7 +88,7 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	address := listener.Addr().String()
 	url := "http://" + address + prefix
 	server := &http.Server{
-		Handler:           snapshotHandler(snapshot, assets, address, prefix),
+		Handler:           snapshotHandler(snapshot, assetFS, address, prefix),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	done := make(chan error, 1)

@@ -95,7 +95,7 @@ async function waitFor(predicate) {
   }
 }
 try {
-  await import('../internal/viewer/dist/assets/main.js');
+  await import('../assets/dist/assets/main.js');
   await waitFor(() => window.document.getElementById('loading'));
   assert.equal(
     window.document.getElementById('loading').textContent,

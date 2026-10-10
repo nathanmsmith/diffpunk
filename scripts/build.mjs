@@ -9,7 +9,7 @@ import {
 } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
-const out = 'internal/viewer/dist';
+const out = 'assets/dist';
 await rm(out, { recursive: true, force: true });
 await mkdir(`${out}/assets`, { recursive: true });
 await writeFile(`${out}/.gitkeep`, '');

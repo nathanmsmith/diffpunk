@@ -28,6 +28,6 @@ release: frontend
 	./scripts/release.sh
 
 clean:
-	rm -rf bin release internal/viewer/dist
-	mkdir -p internal/viewer/dist
-	touch internal/viewer/dist/.gitkeep
+	rm -rf bin release assets/dist
+	mkdir -p assets/dist
+	touch assets/dist/.gitkeep
