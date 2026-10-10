@@ -22,10 +22,12 @@ type File struct {
 }
 
 type Snapshot struct {
-	Repository string   `json:"repository"`
-	Arguments  []string `json:"arguments"`
-	CreatedAt  string   `json:"createdAt"`
-	Files      []File   `json:"files"`
+	Repository         string   `json:"repository"`
+	Arguments          []string `json:"arguments"`
+	CreatedAt          string   `json:"createdAt"`
+	Files              []File   `json:"files"`
+	UntrackedAvailable bool     `json:"untrackedAvailable"`
+	ShowUntracked      bool     `json:"showUntracked"`
 }
 
 // Reporting and alternative formats retain their native terminal behavior.
@@ -86,18 +88,19 @@ func diffArgs(args, controls []string) []string {
 }
 
 func capture(ctx context.Context, args []string) (*Snapshot, string, error) {
+	args, showUntracked := viewerArgs(args)
 	cmd := gitCommand(ctx, patchArgs(args, false)...)
 	cmd.Stderr = os.Stderr
 	patch, err := cmd.Output()
 	if err != nil {
 		return nil, "", err
 	}
-	if len(patch) == 0 {
-		return nil, "", nil
-	}
-	files, err := parseFiles(string(patch))
-	if err != nil {
-		return nil, string(patch), nil
+	files := []File{}
+	if len(patch) > 0 {
+		files, err = parseFiles(string(patch))
+		if err != nil {
+			return nil, string(patch), nil
+		}
 	}
 	// A second patch uses the same selection and diff algorithm, but includes all
 	// context. This also works for staged and historical files and textconv.
@@ -122,9 +125,21 @@ func capture(ctx context.Context, args []string) (*Snapshot, string, error) {
 	captureMetadataContents(ctx, args, files)
 	rootCmd := gitCommand(ctx, "rev-parse", "--show-toplevel")
 	root, _ := rootCmd.Output()
+	available, paths, relative := untrackedSelection(ctx, args)
+	if available {
+		untracked, captureErr := captureUntracked(ctx, strings.TrimSpace(string(root)), paths, relative)
+		if captureErr != nil {
+			return nil, "", captureErr
+		}
+		files = append(files, untracked...)
+	}
+	if len(files) == 0 {
+		return nil, "", nil
+	}
 	return &Snapshot{
 		Repository: strings.TrimSpace(string(root)), Arguments: append([]string{}, args...),
 		CreatedAt: time.Now().UTC().Format(time.RFC3339), Files: sortFiles(files),
+		UntrackedAvailable: available, ShowUntracked: showUntracked && available,
 	}, "", nil
 }
 

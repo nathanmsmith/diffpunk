@@ -43,6 +43,7 @@ try {
   git('mv', 'old.txt', 'renamed.txt');
   await write('added.ts', 'const added = "<script>alert(1)</script>";\n');
   git('add', 'added.ts');
+  await write('new.ts', 'const fresh = true;\n');
   server = spawn(binary, ['HEAD'], {
     cwd: fixture,
     env: { ...process.env, DIFF_PUNK_NO_OPEN: '1' },
@@ -73,6 +74,7 @@ try {
   assert.ok(order.indexOf('foo.test.ts') < order.indexOf('src/deep/bar.ts'));
   // Later edits must not leak into the browser's full-file view.
   await write('foo.ts', '// EDITED_AFTER_SNAPSHOT\n');
+  await write('new.ts', '// EDITED_AFTER_SNAPSHOT\n');
   browser = await (
     process.env.DIFF_PUNK_TEST_BROWSER === 'firefox' ? firefox : chromium
   ).launch({ headless: true });
@@ -137,6 +139,30 @@ try {
     }
   }
   await assertHighlighting();
+  const untracked = page.locator('section[data-path="new.ts"]');
+  assert.equal(await untracked.count(), 0);
+  const toggle = page.getByRole('button', {
+    name: 'Show untracked files',
+    exact: true,
+  });
+  assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
+  await toggle.click();
+  await untracked
+    .locator('pre')
+    .filter({ hasText: 'const fresh = true' })
+    .waitFor();
+  assert.doesNotMatch(await untracked.innerText(), /EDITED_AFTER_SNAPSHOT/);
+  assert.match(await untracked.locator('.file-kind').innerText(), /Untracked/);
+  assert.equal(
+    Number(await page.locator('#file-count').innerText()),
+    snapshot.files.length,
+  );
+  await toggle.click();
+  await untracked.waitFor({ state: 'detached' });
+  assert.equal(
+    Number(await page.locator('#file-count').innerText()),
+    snapshot.files.length - 1,
+  );
   await foo
     .getByRole('button', { name: 'Show full file', exact: true })
     .click();
@@ -200,6 +226,8 @@ try {
     'true',
   );
   assert.ok(await page.locator('#files').isHidden());
+  assert.ok(await toggle.isVisible());
+  assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
   assert.deepEqual(errors, [], `Browser errors: ${errors.join('\n')}`);
   assert.deepEqual(external, [], `Unexpected external requests: ${external}`);
   await browser.close();

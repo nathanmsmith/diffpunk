@@ -26,7 +26,7 @@ var version = "dev"
 func main() { os.Exit(run()) }
 
 func run() int {
-	args := os.Args[1:]
+	args, _ := viewerArgs(os.Args[1:])
 	if len(args) == 1 && args[0] == "--version" {
 		fmt.Println("diff punk", version)
 		return 0
@@ -44,7 +44,7 @@ func run() int {
 		return passthrough(ctx, args)
 	}
 
-	snapshot, raw, err := capture(ctx, args)
+	snapshot, raw, err := capture(ctx, os.Args[1:])
 	if err != nil {
 		if e, ok := err.(*exec.ExitError); ok {
 			return e.ExitCode()

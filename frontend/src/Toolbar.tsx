@@ -4,6 +4,9 @@ interface Props {
   repository: string;
   repositoryPath?: string;
   layout: Layout;
+  untrackedAvailable?: boolean;
+  showUntracked: boolean;
+  onUntrackedChange: (show: boolean) => void;
   onLayoutChange: (layout: Layout) => void;
 }
 
@@ -12,6 +15,9 @@ export function Toolbar({
   repositoryPath,
   layout,
   onLayoutChange,
+  untrackedAvailable,
+  showUntracked,
+  onUntrackedChange,
 }: Props) {
   return (
     <header className="toolbar">
@@ -21,6 +27,16 @@ export function Toolbar({
       <div className="repository" id="repository" title={repositoryPath}>
         {repository}
       </div>
+      {untrackedAvailable && (
+        <button
+          id="show-untracked"
+          className="untracked-toggle"
+          aria-pressed={showUntracked}
+          onClick={() => onUntrackedChange(!showUntracked)}
+        >
+          Show untracked files
+        </button>
+      )}
       <div className="layouts" role="group" aria-label="Diff layout">
         {(['split', 'unified'] as const).map((mode) => (
           <button

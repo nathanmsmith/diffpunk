@@ -11,6 +11,7 @@ type LoadState =
 
 export function App() {
   const [load, setLoad] = useState<LoadState>({ status: 'loading' });
+  const [showUntracked, setShowUntracked] = useState(false);
   const [layout, setLayout] = useState<Layout>(() =>
     matchMedia('(max-width: 800px)').matches ? 'unified' : 'split',
   );
@@ -34,7 +35,10 @@ export function App() {
         if (!response.ok)
           throw new Error(`Could not load snapshot (${response.status})`);
         const snapshot: Snapshot = await response.json();
-        if (!controller.signal.aborted) setLoad({ status: 'loaded', snapshot });
+        if (!controller.signal.aborted) {
+          setShowUntracked(Boolean(snapshot.showUntracked));
+          setLoad({ status: 'loaded', snapshot });
+        }
       } catch (error) {
         if (!controller.signal.aborted)
           setLoad({
@@ -49,6 +53,18 @@ export function App() {
   }, []);
 
   const snapshot = load.status === 'loaded' ? load.snapshot : undefined;
+  const visibleSnapshot = useMemo(
+    () =>
+      snapshot && {
+        ...snapshot,
+        files: snapshot.files.filter(
+          (file) => showUntracked || file.kind !== 'untracked',
+        ),
+      },
+    [snapshot, showUntracked],
+  );
+  const hiddenUntracked =
+    snapshot?.files.filter((file) => file.kind === 'untracked').length ?? 0;
   const repository = snapshot
     ? (snapshot.repository.split('/').filter(Boolean).at(-1) ??
       snapshot.repository)
@@ -64,9 +80,12 @@ export function App() {
         repositoryPath={snapshot?.repository}
         layout={layout}
         onLayoutChange={setLayout}
+        untrackedAvailable={snapshot?.untrackedAvailable}
+        showUntracked={showUntracked}
+        onUntrackedChange={setShowUntracked}
       />
       <div className="workspace">
-        <Sidebar snapshot={snapshot} />
+        <Sidebar snapshot={visibleSnapshot} />
         <main id="diffs" aria-label="Diffs">
           {load.status === 'loading' && (
             <div className="empty" id="loading">
@@ -76,7 +95,7 @@ export function App() {
           {load.status === 'error' && (
             <div className="empty">{load.message}</div>
           )}
-          {snapshot?.files.map((file, index) => (
+          {visibleSnapshot?.files.map((file, index) => (
             <FileSection
               key={file.name}
               file={file}
@@ -84,8 +103,12 @@ export function App() {
               options={options}
             />
           ))}
-          {snapshot?.files.length === 0 && (
-            <div className="empty">No changes.</div>
+          {visibleSnapshot?.files.length === 0 && (
+            <div className="empty">
+              {!showUntracked && hiddenUntracked > 0
+                ? 'No tracked changes. Enable “Show untracked files” to view new files.'
+                : 'No changes.'}
+            </div>
           )}
         </main>
       </div>

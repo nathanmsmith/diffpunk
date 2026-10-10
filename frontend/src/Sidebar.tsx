@@ -10,10 +10,11 @@ const statuses: Record<string, string> = {
   deleted: 'D',
   renamed: 'R',
   copied: 'C',
+  untracked: '?',
 };
 
 export function Sidebar({ snapshot }: Props) {
-  const [activeFile, setActiveFile] = useState<number>();
+  const [activeFile, setActiveFile] = useState<string>();
   return (
     <aside>
       <div className="sidebar-label">
@@ -24,8 +25,8 @@ export function Sidebar({ snapshot }: Props) {
           <a
             key={file.name}
             href={`#file-${index}`}
-            className={activeFile === index ? 'active' : undefined}
-            onClick={() => setActiveFile(index)}
+            className={activeFile === file.name ? 'active' : undefined}
+            onClick={() => setActiveFile(file.name)}
           >
             <span className="status">{statuses[file.kind] ?? 'M'}</span>
             <span className="name">{file.name}</span>

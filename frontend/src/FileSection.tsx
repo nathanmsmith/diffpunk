@@ -14,13 +14,13 @@ export function FileSection({ file, index, options }: Props) {
     try {
       return processFile(file.patch, {
         throwOnError: true,
-        cacheKey: `patch-${index}`,
+        cacheKey: `patch-${file.name}`,
       });
     } catch (error) {
       console.error(error);
       return undefined;
     }
-  }, [file.patch, index]);
+  }, [file.patch, file.name]);
   const [expanded, setExpanded] = useState(false);
   const [full, setFull] = useState<FileDiffMetadata>();
   const [expansionFailed, setExpansionFailed] = useState(false);
@@ -32,9 +32,9 @@ export function FileSection({ file, index, options }: Props) {
     () => ({
       name: file.name,
       contents: file.fullContent ?? '',
-      cacheKey: `metadata-${index}`,
+      cacheKey: `metadata-${file.name}`,
     }),
-    [file.name, file.fullContent, index],
+    [file.name, file.fullContent],
   );
 
   function toggleExpanded() {
@@ -42,7 +42,7 @@ export function FileSection({ file, index, options }: Props) {
       if (hasDiff && !expanded && !full) {
         const parsed = processFile(file.fullPatch!, {
           throwOnError: true,
-          cacheKey: `full-${index}`,
+          cacheKey: `full-${file.name}`,
         });
         if (!parsed) throw new Error('Full-file context is unavailable');
         setFull(parsed);
@@ -62,7 +62,9 @@ export function FileSection({ file, index, options }: Props) {
             ? `${file.previousName} → ${file.name}`
             : file.name}
         </h2>
-        <span className="file-kind">{file.kind}</span>
+        <span className="file-kind">
+          {file.kind === 'untracked' ? 'Untracked' : file.kind}
+        </span>
         {canExpand && (
           <button
             aria-expanded={expanded}

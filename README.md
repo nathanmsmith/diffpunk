@@ -5,6 +5,7 @@ with the same arguments you would pass to Git:
 
 ```sh
 diff-punk                    # unstaged changes
+diff-punk --untracked        # initially show untracked files
 diff-punk --staged           # staged changes
 diff-punk HEAD               # working tree compared with HEAD
 diff-punk main...HEAD        # branch changes since the merge base
@@ -13,7 +14,7 @@ diff-punk -U10 -- src/       # more context, limited to a path
 
 The command opens your default browser and keeps a local server running. Press
 **Ctrl-C** in the terminal to stop it. Each invocation captures a snapshot;
-subsequent edits do not change the viewer. An empty diff exits immediately.
+subsequent edits do not change the viewer. An empty diff exits immediately unless eligible untracked files are present.
 
 The viewer shows all files on one scrolling page, with a file navigation sidebar,
 syntax highlighting, and light/dark colors matching your system. It defaults to
@@ -64,8 +65,14 @@ help; `--version` prints the diff punk version.
 Full-file context is captured with a second Git invocation before the server
 starts. Keep files stable during startup for the patch and expanded context to
 represent the same state. After startup, both views are frozen. Large files have
-no special limits in v1. Untracked files follow Git's normal behavior and are not
-included unless you use `git add -N` first.
+no special limits in v1. Working-tree views capture untracked files too, respecting
+Git ignore rules and supplied pathspecs. **Show untracked files** toggles their
+visibility; they appear as complete added-file diffs labeled **Untracked**.
+They are hidden by default; `--untracked` shows them initially. The browser setting
+lasts only for that page session. If only untracked files exist, the viewer opens
+with a prompt to enable the toggle. Staged and commit-to-commit comparisons omit
+untracked files and hide the toggle. Reporting modes retain Git's normal behavior;
+`--untracked` is stripped before passing those commands to Git.
 
 On Linux, opening the default browser uses `xdg-open`. If opening fails, the
 terminal prints a URL you can open manually. Set `DIFF_PUNK_NO_OPEN=1` to run
