@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -67,19 +68,29 @@ func run() int {
 }
 
 func serve(ctx context.Context, snapshot *Snapshot) error {
-	assetFS, err := fs.Sub(assets.Assets, "dist")
-	if err != nil {
-		return err
-	}
-	if _, err := fs.Stat(assetFS, "index.html"); err != nil {
-		return fmt.Errorf("viewer assets missing; run npm run build before go build")
-	}
 	listener, err := net.Listen("tcp", "127.0.0.1:5555")
 	if err != nil {
 		return err
 	}
 	// Serve closes the listener; also clean up if setup fails before Serve starts.
 	defer func() { _ = listener.Close() }()
+	devServer, stopDevServer, err := prepareDevServer(ctx)
+	defer stopDevServer()
+	if ctx.Err() != nil {
+		return nil
+	}
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "diff punk:", err, "(using embedded assets)")
+	}
+	assetFS, err := fs.Sub(assets.Assets, "dist")
+	if err != nil {
+		return err
+	}
+	if devServer == nil {
+		if _, err := fs.Stat(assetFS, "index.html"); err != nil {
+			return fmt.Errorf("viewer assets missing; run npm run build before go build")
+		}
+	}
 	var token [16]byte
 	if _, err := rand.Read(token[:]); err != nil {
 		return err
@@ -88,11 +99,14 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	address := listener.Addr().String()
 	url := "http://" + address + prefix
 	server := &http.Server{
-		Handler:           snapshotHandler(snapshot, assetFS, address, prefix),
+		Handler:           snapshotHandler(snapshot, assetFS, address, prefix, devServer),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
+	if devServer != nil {
+		fmt.Fprintln(os.Stderr, "diff punk: React dev server detected (Fast Refresh enabled)")
+	}
 	fmt.Fprintf(os.Stderr, "diff punk: %s\nPress Ctrl-C to stop.\n", url)
 	if os.Getenv("DIFF_PUNK_NO_OPEN") != "1" {
 		if err := openBrowser(url); err != nil {
@@ -112,14 +126,22 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	}
 }
 
-func snapshotHandler(snapshot *Snapshot, assets fs.FS, address, prefix string) http.Handler {
+func snapshotHandler(snapshot *Snapshot, assets fs.FS, address, prefix string, devServer *url.URL) http.Handler {
 	data, _ := json.Marshal(snapshot)
 	static := http.StripPrefix(prefix, http.FileServer(http.FS(assets)))
+	if devServer != nil {
+		static = devFrontend(devServer, prefix)
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// A loopback listener, exact Host, and unguessable URL keep repository
 		// contents inaccessible to unrelated websites and DNS rebinding requests.
-		if r.Host != address || !strings.HasPrefix(r.URL.Path, prefix) {
+		devRequest := devServer != nil && strings.HasPrefix(r.URL.Path, devBase)
+		if r.Host != address || (!strings.HasPrefix(r.URL.Path, prefix) && !devRequest) {
 			http.NotFound(w, r)
+			return
+		}
+		if devServer != nil && r.Header.Get("Upgrade") != "" && r.Header.Get("Origin") != "http://"+address {
+			http.Error(w, "Unexpected WebSocket origin", http.StatusForbidden)
 			return
 		}
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {
@@ -129,7 +151,14 @@ func snapshotHandler(snapshot *Snapshot, assets fs.FS, address, prefix string) h
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		w.Header().Set("Cache-Control", "no-store")
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'")
+		scriptSources := "'self' 'wasm-unsafe-eval'"
+		connectSources := "'self'"
+		if devServer != nil {
+			// Vite injects an inline React Refresh preamble and uses WebSockets.
+			scriptSources += " 'unsafe-inline'"
+			connectSources += " ws://" + address
+		}
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src "+scriptSources+"; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src "+connectSources+"; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'")
 		if r.URL.Path == prefix+"snapshot.json" {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			if r.Method == http.MethodGet {

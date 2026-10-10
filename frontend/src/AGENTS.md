@@ -1,1 +1,1 @@
-* Define component props with `interface Props`
+- Define component props with `interface Props`

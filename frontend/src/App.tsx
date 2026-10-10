@@ -11,7 +11,7 @@ type LoadState =
 
 export function App() {
   const [load, setLoad] = useState<LoadState>({ status: 'loading' });
-  const [showUntracked, setShowUntracked] = useState(false);
+  const [showUntrackedOverride, setShowUntracked] = useState<boolean>();
   const [layout, setLayout] = useState<Layout>(() =>
     matchMedia('(max-width: 800px)').matches ? 'unified' : 'split',
   );
@@ -36,7 +36,6 @@ export function App() {
           throw new Error(`Could not load snapshot (${response.status})`);
         const snapshot: Snapshot = await response.json();
         if (!controller.signal.aborted) {
-          setShowUntracked(Boolean(snapshot.showUntracked));
           setLoad({ status: 'loaded', snapshot });
         }
       } catch (error) {
@@ -53,6 +52,8 @@ export function App() {
   }, []);
 
   const snapshot = load.status === 'loaded' ? load.snapshot : undefined;
+  const showUntracked =
+    showUntrackedOverride ?? Boolean(snapshot?.showUntracked);
   const visibleSnapshot = useMemo(
     () =>
       snapshot && {

@@ -23,6 +23,7 @@ test: build lint-go
 browser-test: build
 	npx playwright install --with-deps chromium
 	npm run test:browser
+	npm run test:dev
 
 release: frontend
 	./scripts/release.sh

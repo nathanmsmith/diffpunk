@@ -2,17 +2,25 @@ import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { resolve, join } from 'node:path';
+import { join } from 'node:path';
 import { once } from 'node:events';
 import { chromium, firefox } from 'playwright';
 
-const binary = resolve('bin/diff-punk');
+const buildDir = await mkdtemp(join(tmpdir(), 'diff-punk-browser-bin-'));
+const binary = join(buildDir, 'diff-punk');
 const fixture = await mkdtemp(join(tmpdir(), 'diff-punk-browser-'));
 const git = (...args) =>
   execFileSync('git', args, { cwd: fixture, encoding: 'utf8' });
 const write = (name, body) => writeFile(join(fixture, name), body);
 let server, browser;
 try {
+  execFileSync('go', [
+    'build',
+    '-ldflags=-X main.development=false',
+    '-o',
+    binary,
+    '.',
+  ]);
   git('init', '-q');
   git('config', 'user.name', 'Test');
   git('config', 'user.email', 'test@example.invalid');
@@ -253,4 +261,5 @@ try {
   if (browser) await browser.close();
   if (server) server.kill('SIGTERM');
   await rm(fixture, { recursive: true, force: true });
+  await rm(buildDir, { recursive: true, force: true });
 }

@@ -1,33 +1,10 @@
-import { build } from 'esbuild';
-import {
-  mkdir,
-  rm,
-  copyFile,
-  readFile,
-  readdir,
-  writeFile,
-} from 'node:fs/promises';
+import { build } from 'vite';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 const out = 'assets/dist';
-await rm(out, { recursive: true, force: true });
-await mkdir(`${out}/assets`, { recursive: true });
+await build();
 await writeFile(`${out}/.gitkeep`, '');
-await build({
-  entryPoints: ['frontend/src/main.tsx'],
-  outdir: `${out}/assets`,
-  bundle: true,
-  splitting: true,
-  format: 'esm',
-  platform: 'browser',
-  target: 'es2022',
-  minify: true,
-  legalComments: 'external',
-  entryNames: '[name]',
-  chunkNames: 'chunks/[name]-[hash]',
-  loader: { '.wasm': 'binary' },
-});
-await copyFile('frontend/index.html', `${out}/index.html`);
 
 // Ship the licenses of the embedded production dependencies with the binary.
 const packages = execFileSync(

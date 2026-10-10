@@ -2,19 +2,26 @@ import assert from 'node:assert/strict';
 import { spawn, spawnSync, execFileSync } from 'node:child_process';
 import { mkdtemp, writeFile, rm, mkdir, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { resolve, join } from 'node:path';
+import { join } from 'node:path';
 import { once } from 'node:events';
 import { request } from 'node:http';
 
-const binary = resolve('bin/diff-punk');
 const fixture = await mkdtemp(join(tmpdir(), 'diff-punk-cli-'));
 const outside = await mkdtemp(join(tmpdir(), 'diff-punk-files-'));
+const binary = join(outside, 'diff-punk');
 const git = (...args) =>
   execFileSync('git', args, { cwd: fixture, encoding: 'utf8' });
 const run = (program, args) =>
   spawnSync(program, args, { cwd: fixture, encoding: 'utf8' });
 let server;
 try {
+  execFileSync('go', [
+    'build',
+    '-ldflags=-X main.development=false',
+    '-o',
+    binary,
+    '.',
+  ]);
   git('init', '-q');
   git('config', 'user.name', 'Test');
   git('config', 'user.email', 'test@example.invalid');
@@ -146,9 +153,13 @@ try {
   await writeFile(join(fixture, 'foo.txt'), 'edited after snapshot\n');
   assert.deepEqual(await (await fetch(`${url}snapshot.json`)).json(), snapshot);
   const html = await (await fetch(url)).text();
-  assert.match(html, /assets\/main.js/);
-  for (const asset of ['assets/main.js', 'assets/main.css'])
-    assert.equal((await fetch(`${url}${asset}`)).status, 200);
+  const assets = [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)].map(
+    (match) => match[1],
+  );
+  assert.ok(assets.some((asset) => asset.endsWith('.js')));
+  assert.ok(assets.some((asset) => asset.endsWith('.css')));
+  for (const asset of assets)
+    assert.equal((await fetch(new URL(asset, url))).status, 200);
   assert.equal((await fetch(new URL('/snapshot.json', url))).status, 404);
   const wrongHostStatus = await new Promise((resolveStatus, reject) => {
     const req = request(

@@ -46,7 +46,7 @@ make build
 ./bin/diff-punk
 ```
 
-The frontend uses React, TypeScript, and `@pierre/diffs`. Go embeds the production
+The frontend uses React, TypeScript, Vite, and `@pierre/diffs`. Go embeds the production
 HTML, JavaScript, CSS, syntax grammars, themes, and third-party licenses. The viewer
 loads everything locally and needs no internet connection at runtime.
 
@@ -81,12 +81,44 @@ without launching a browser (useful for tests or a headless environment).
 
 ## Development and checks
 
+Build the CLI once with `make build`, then run it as usual:
+
+```sh
+./bin/diff-punk
+./bin/diff-punk --staged
+./bin/diff-punk main...HEAD
+```
+
+Development CLI builds automatically start this checkout's Vite server on
+`127.0.0.1:5173` and open the viewer through Go on `127.0.0.1:5555`.
+An already-running Vite server is reused. A server started by the CLI stops when
+the CLI exits; to keep Vite running across CLI sessions, start `npm run dev` in
+another terminal first.
+React Fast Refresh preserves component state for compatible edits, and CSS updates
+without reloading the page. Use the URL opened by the CLI; the Vite URL alone has
+no diff snapshot. The CLI still captures a frozen diff at startup, and can be run
+from any repository using the path to the executable.
+
+The CLI locates frontend sources beside its executable (in the checkout root or
+its `bin` directory), so it also works when launched from another repository.
+Outside the checkout, development binaries attach to an existing Vite server or
+use embedded assets. If Node.js or installed Vite dependencies are unavailable,
+startup explains the problem and falls back to embedded assets. An unrelated
+service on port 5173 also causes a fallback. If Vite stops during a session,
+restart the CLI to start it again. Release archives always use embedded assets.
+Go edits require rebuilding the CLI with `go build -o bin/diff-punk .` and
+restarting it. Run `make build` to rebuild both the frontend and the CLI.
+
+`npm run build` uses Vite to generate production assets and third-party license
+notices in `assets/dist` before Go embeds them.
+
 ```sh
 make test                 # build, lint, format, typecheck, Go race, DOM and CLI checks
-make browser-test         # install Chromium and run browser integration checks
+make browser-test         # install Chromium and check production + Fast Refresh
 make lint-go              # build embedded assets and check Go code and formatting
 npm run lint:fix          # fix automatically correctable ESLint issues
 npm run format            # format JS/TS, CSS, HTML, JSON, Markdown, and YAML
+npm run test:dev           # check dev integration (requires built CLI and browser)
 ```
 
 ESLint checks the frontend TypeScript/TSX and Node.js scripts with recommended rules.
@@ -109,7 +141,10 @@ The checks use temporary repositories and cover staging, revision comparisons,
 path filters, renames, deletion, binary files, deterministic pairing, frozen
 full-file context, terminal output/exit codes, browser launching, and shutdown.
 CI runs the checks on macOS and Linux. Browser tests also check responsive layouts,
-both color schemes, and that all assets load locally.
+both color schemes, and that all assets load locally. Dev integration checks edit
+an isolated frontend copy to verify React/CSS refresh, state preservation, frozen
+snapshots, automatic Vite startup and shutdown, release isolation, and fallback
+to embedded assets.
 
 ```sh
 make release              # build four standalone release archives and checksums
