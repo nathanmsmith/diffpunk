@@ -200,6 +200,13 @@ main {
   font-size: 11px;
   flex-shrink: 0;
 }
+.mark-viewed[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.file[data-viewed='true'] .file-header {
+  border-bottom: 0;
+}
 .file-summary,
 .empty {
   padding: 24px;

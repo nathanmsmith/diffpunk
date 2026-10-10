@@ -22,6 +22,7 @@ export function FileSection({ file, index, options }: Props) {
     }
   }, [file.patch, file.name]);
   const [expanded, setExpanded] = useState(false);
+  const [viewed, setViewed] = useState(false);
   const [full, setFull] = useState<FileDiffMetadata>();
   const [expansionFailed, setExpansionFailed] = useState(false);
   const hasDiff = patch !== undefined && patch.hunks.length > 0;
@@ -55,7 +56,12 @@ export function FileSection({ file, index, options }: Props) {
   }
 
   return (
-    <section className="file" id={`file-${index}`} data-path={file.name}>
+    <section
+      className="file"
+      id={`file-${index}`}
+      data-path={file.name}
+      data-viewed={viewed}
+    >
       <div className="file-header">
         <h2 className="file-name">
           {file.previousName
@@ -78,27 +84,38 @@ export function FileSection({ file, index, options }: Props) {
                 : 'Show full file'}
           </button>
         )}
+        <button
+          className="mark-viewed"
+          type="button"
+          aria-pressed={viewed}
+          aria-label={viewed ? 'Mark as unviewed' : 'Mark as viewed'}
+          onClick={() => setViewed(!viewed)}
+        >
+          {viewed ? '✓ Viewed' : 'Mark as viewed'}
+        </button>
       </div>
-      {hasDiff ? (
-        <FileDiff
-          className="diff-host"
-          fileDiff={expanded && full ? full : patch}
-          options={options}
-        />
-      ) : (
-        <>
-          <div className="file-summary" hidden={expanded}>
-            {file.patch.includes('Binary files ') ||
-            file.patch.includes('GIT binary patch')
-              ? 'Binary file changed'
-              : 'File metadata changed'}
-            <pre>{file.patch}</pre>
-          </div>
-          {expanded && (
-            <File className="diff-host" file={contents} options={options} />
-          )}
-        </>
-      )}
+      <div hidden={viewed}>
+        {hasDiff ? (
+          <FileDiff
+            className="diff-host"
+            fileDiff={expanded && full ? full : patch}
+            options={options}
+          />
+        ) : (
+          <>
+            <div className="file-summary" hidden={expanded}>
+              {file.patch.includes('Binary files ') ||
+              file.patch.includes('GIT binary patch')
+                ? 'Binary file changed'
+                : 'File metadata changed'}
+              <pre>{file.patch}</pre>
+            </div>
+            {expanded && (
+              <File className="diff-host" file={contents} options={options} />
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }
