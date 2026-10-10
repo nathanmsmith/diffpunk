@@ -1,0 +1,1 @@
+* Define component props with `interface Props`
