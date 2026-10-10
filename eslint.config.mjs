@@ -11,7 +11,7 @@ export default defineConfig([
     extends: [js.configs.recommended],
   },
   {
-    files: ['web/src/**/*.{ts,tsx}'],
+    files: ['frontend/src/**/*.{ts,tsx}'],
     extends: [tseslint.configs.recommended],
     languageOptions: { globals: globals.browser },
   },

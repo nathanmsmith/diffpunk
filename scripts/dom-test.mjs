@@ -46,7 +46,7 @@ for (const key of Object.getOwnPropertyNames(window)) {
     });
   }
 }
-window.document.write(await readFile('web/index.html', 'utf8'));
+window.document.write(await readFile('frontend/index.html', 'utf8'));
 const patch = `diff --git a/foo.ts b/foo.ts\nindex 1111111..2222222 100644\n--- a/foo.ts\n+++ b/foo.ts\n@@ -10,1 +10,1 @@\n-const value = 1;\n+const value = 2;\n`;
 const full = `diff --git a/foo.ts b/foo.ts\nindex 1111111..2222222 100644\n--- a/foo.ts\n+++ b/foo.ts\n@@ -1,11 +1,11 @@\n // TOP_CONTEXT\n${Array.from({ length: 8 }, () => ' // context\n').join('')}-const value = 1;\n+const value = 2;\n // END_CONTEXT\n`;
 const snapshot = {

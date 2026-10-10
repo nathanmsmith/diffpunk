@@ -14,7 +14,7 @@ await rm(out, { recursive: true, force: true });
 await mkdir(`${out}/assets`, { recursive: true });
 await writeFile(`${out}/.gitkeep`, '');
 await build({
-  entryPoints: ['web/src/main.tsx'],
+  entryPoints: ['frontend/src/main.tsx'],
   outdir: `${out}/assets`,
   bundle: true,
   splitting: true,
@@ -27,7 +27,7 @@ await build({
   chunkNames: 'chunks/[name]-[hash]',
   loader: { '.wasm': 'binary' },
 });
-await copyFile('web/index.html', `${out}/index.html`);
+await copyFile('frontend/index.html', `${out}/index.html`);
 
 // Ship the licenses of the embedded production dependencies with the binary.
 const packages = execFileSync(
