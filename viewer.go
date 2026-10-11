@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const viewerCloseGrace = 5 * time.Second
+const viewerCloseGrace = 500 * time.Millisecond
 
 // Each viewer holds an event stream open. Only the last disconnect starts the
 // shutdown timer, and a reconnect cancels it so refreshes can keep the CLI alive.
