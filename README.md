@@ -10,7 +10,7 @@ git diff main...HEAD -- src/
 ```
 
 Git sends its output to diff punk, which opens the browser and keeps the terminal
-occupied until **Ctrl-C**. This setup affects `git diff` only; other Git commands
+occupied until you close the viewer or press **Ctrl-C**. This setup affects `git diff` only; other Git commands
 keep their existing pager. Git retains control of comparison options and exit
 status. `git --no-pager diff` bypasses the viewer, and redirected or piped Git
 output keeps its normal behavior. To disable the integration:
@@ -32,9 +32,12 @@ diff-punk -U10 -- src/       # more context, limited to a path
 
 The command opens your default browser and keeps a local server running on
 `127.0.0.1:5555`. If port 5555 is already in use, startup fails. Press
-**Ctrl-C** in the terminal to stop it. Each invocation captures a snapshot;
+**Ctrl-C** in the terminal to stop it, or close all viewer tabs. The server exits
+five seconds after the last viewer disconnects, allowing time for a refresh to
+reconnect. It waits for a viewer to connect before enabling automatic shutdown,
+so you can also open the printed URL manually. Each invocation captures a snapshot;
 subsequent edits do not change the viewer. An empty diff exits immediately.
-Only one viewer can run at a time; stop it with Ctrl-C before starting another.
+Only one viewer can run at a time; close it or press Ctrl-C before starting another.
 
 The viewer shows all files on one scrolling page, with a file navigation sidebar,
 syntax highlighting, and light/dark colors matching your system. It defaults to

@@ -25,6 +25,25 @@ export function App() {
   );
 
   useEffect(() => {
+    let session: EventSource | undefined;
+    const connect = () => {
+      session ??= new EventSource('./session');
+    };
+    const disconnect = () => {
+      session?.close();
+      session = undefined;
+    };
+    connect();
+    window.addEventListener('pagehide', disconnect);
+    window.addEventListener('pageshow', connect);
+    return () => {
+      window.removeEventListener('pagehide', disconnect);
+      window.removeEventListener('pageshow', connect);
+      disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
     async function loadSnapshot() {
       try {

@@ -75,10 +75,12 @@ func run() int {
 }
 
 func serve(ctx context.Context, snapshot *Snapshot) error {
+	ctx, cancelSession := context.WithCancel(ctx)
+	defer cancelSession()
 	listener, err := net.Listen("tcp", "127.0.0.1:5555")
 	if err != nil {
 		if errors.Is(err, syscall.EADDRINUSE) {
-			return fmt.Errorf("viewer port 5555 is already in use; stop the active viewer with Ctrl-C before starting another")
+			return fmt.Errorf("viewer port 5555 is already in use; close the active viewer or press Ctrl-C before starting another")
 		}
 		return err
 	}
@@ -108,8 +110,9 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	prefix := "/" + hex.EncodeToString(token[:]) + "/"
 	address := listener.Addr().String()
 	url := "http://" + address + prefix
+	session := &viewerSession{ctx: ctx, stop: cancelSession}
 	server := &http.Server{
-		Handler:           snapshotHandler(snapshot, assetFS, address, prefix, devServer),
+		Handler:           snapshotHandlerWithSession(snapshot, assetFS, address, prefix, devServer, session),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	done := make(chan error, 1)
@@ -117,7 +120,7 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	if devServer != nil {
 		fmt.Fprintln(os.Stderr, "diff punk: React dev server detected (Fast Refresh enabled)")
 	}
-	fmt.Fprintf(os.Stderr, "diff punk: %s\nPress Ctrl-C to stop.\n", url)
+	fmt.Fprintf(os.Stderr, "diff punk: %s\nClose the viewer to stop, or press Ctrl-C.\n", url)
 	if os.Getenv("DIFF_PUNK_NO_OPEN") != "1" {
 		if err := openBrowser(url); err != nil {
 			fmt.Fprintln(os.Stderr, "diff punk: could not open browser; open the URL above:", err)
@@ -137,6 +140,10 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 }
 
 func snapshotHandler(snapshot *Snapshot, assets fs.FS, address, prefix string, devServer *url.URL) http.Handler {
+	return snapshotHandlerWithSession(snapshot, assets, address, prefix, devServer, nil)
+}
+
+func snapshotHandlerWithSession(snapshot *Snapshot, assets fs.FS, address, prefix string, devServer *url.URL, session *viewerSession) http.Handler {
 	data, _ := json.Marshal(snapshot)
 	static := http.StripPrefix(prefix, http.FileServer(http.FS(assets)))
 	if devServer != nil {
@@ -169,6 +176,14 @@ func snapshotHandler(snapshot *Snapshot, assets fs.FS, address, prefix string, d
 			connectSources += " ws://" + address
 		}
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src "+scriptSources+"; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src "+connectSources+"; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'")
+		if session != nil && r.URL.Path == prefix+"session" {
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				return
+			}
+			session.ServeHTTP(w, r)
+			return
+		}
 		if r.URL.Path == prefix+"snapshot.json" {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			if r.Method == http.MethodGet {
