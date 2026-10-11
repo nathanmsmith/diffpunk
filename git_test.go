@@ -89,7 +89,7 @@ func TestGitSelectionAndFrozenContext(t *testing.T) {
 	writeTest(t, "nested/other.go", "changed other\n")
 	writeTest(t, "untracked.go", "not included\n")
 	unstaged := takeSnapshot(t)
-	assertNames(t, unstaged, "foo.go", "foo_test.go", "untracked.go", "nested/other.go")
+	assertNames(t, unstaged, "foo.go", "foo_test.go", "nested/other.go")
 	if !strings.Contains(unstaged.Files[0].Patch, "-staged\n+working") {
 		t.Fatal("default did not compare index to working tree")
 	}

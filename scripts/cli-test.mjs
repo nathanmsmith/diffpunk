@@ -36,7 +36,6 @@ try {
   await writeFile(join(fixture, 'foo.txt'), 'one\nchanged\nthree\n');
   for (const args of [
     ['--stat'],
-    ['--untracked', '--stat'],
     ['--name-only'],
     ['--name-status'],
     ['--raw'],
@@ -47,12 +46,7 @@ try {
     ['--no-patch'],
     ['--', 'missing-file'],
   ]) {
-    const expected = run('git', [
-      '--no-pager',
-      'diff',
-      '--no-color',
-      ...args.filter((arg) => arg !== '--untracked'),
-    ]);
+    const expected = run('git', ['--no-pager', 'diff', '--no-color', ...args]);
     const actual = run(binary, ['--no-color', ...args]);
     assert.equal(
       actual.status,
@@ -137,19 +131,11 @@ try {
   });
   assert.equal(occupied.error, undefined);
   assert.equal(occupied.status, 1);
-  assert.match(occupied.stderr, /listen tcp 127\.0\.0\.1:5555:/);
+  assert.match(occupied.stderr, /viewer port 5555 is already in use/);
   const snapshot = await (await fetch(`${url}snapshot.json`)).json();
-  const tracked = snapshot.files.filter((file) => file.kind !== 'untracked');
-  assert.equal(tracked.length, 1);
-  assert.equal(tracked[0].name, 'foo.txt');
-  assert.match(tracked[0].fullPatch, /three/);
-  assert.equal(snapshot.untrackedAvailable, true);
-  assert.equal(snapshot.showUntracked, false);
-  assert.ok(
-    snapshot.files.some(
-      (file) => file.name === 'left.txt' && file.kind === 'untracked',
-    ),
-  );
+  assert.equal(snapshot.files.length, 1);
+  assert.equal(snapshot.files[0].name, 'foo.txt');
+  assert.match(snapshot.files[0].fullPatch, /three/);
   await writeFile(join(fixture, 'foo.txt'), 'edited after snapshot\n');
   assert.deepEqual(await (await fetch(`${url}snapshot.json`)).json(), snapshot);
   const html = await (await fetch(url)).text();

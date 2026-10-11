@@ -117,7 +117,7 @@ try {
     await new Promise((resolveWait) => setTimeout(resolveWait, 50));
   }
 
-  const { url, output } = await startCLI(binary, ['--untracked']);
+  const { url, output } = await startCLI(binary, []);
   assert.match(output, /React dev server detected/);
   const snapshot = await (await fetch(`${url}snapshot.json`)).json();
   assert.equal(snapshot.repository, await realpath(repository));
@@ -139,7 +139,6 @@ try {
   await section.locator('pre').filter({ hasText: 'value14 = 140' }).waitFor();
   await section.getByRole('button', { name: 'Show full file' }).click();
   await page.locator('#unified').click();
-  await page.locator('#show-untracked').click();
   await page.evaluate(() => {
     window.devTestSentinel = 'preserved';
   });
@@ -166,10 +165,6 @@ try {
   assert.equal(
     await page.locator('#unified').getAttribute('aria-pressed'),
     'true',
-  );
-  assert.equal(
-    await page.locator('#show-untracked').getAttribute('aria-pressed'),
-    'false',
   );
   assert.equal(
     await section

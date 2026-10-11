@@ -22,12 +22,10 @@ type File struct {
 }
 
 type Snapshot struct {
-	Repository         string   `json:"repository"`
-	Arguments          []string `json:"arguments"`
-	CreatedAt          string   `json:"createdAt"`
-	Files              []File   `json:"files"`
-	UntrackedAvailable bool     `json:"untrackedAvailable"`
-	ShowUntracked      bool     `json:"showUntracked"`
+	Repository string   `json:"repository"`
+	Arguments  []string `json:"arguments"`
+	CreatedAt  string   `json:"createdAt"`
+	Files      []File   `json:"files"`
 }
 
 // Reporting and alternative formats retain their native terminal behavior.
@@ -88,7 +86,6 @@ func diffArgs(args, controls []string) []string {
 }
 
 func capture(ctx context.Context, args []string) (*Snapshot, string, error) {
-	args, showUntracked := viewerArgs(args)
 	cmd := gitCommand(ctx, patchArgs(args, false)...)
 	cmd.Stderr = os.Stderr
 	patch, err := cmd.Output()
@@ -125,21 +122,12 @@ func capture(ctx context.Context, args []string) (*Snapshot, string, error) {
 	captureMetadataContents(ctx, args, files)
 	rootCmd := gitCommand(ctx, "rev-parse", "--show-toplevel")
 	root, _ := rootCmd.Output()
-	available, paths, relative := untrackedSelection(ctx, args)
-	if available {
-		untracked, captureErr := captureUntracked(ctx, strings.TrimSpace(string(root)), paths, relative)
-		if captureErr != nil {
-			return nil, "", captureErr
-		}
-		files = append(files, untracked...)
-	}
 	if len(files) == 0 {
 		return nil, "", nil
 	}
 	return &Snapshot{
 		Repository: strings.TrimSpace(string(root)), Arguments: append([]string{}, args...),
 		CreatedAt: time.Now().UTC().Format(time.RFC3339), Files: sortFiles(files),
-		UntrackedAvailable: available, ShowUntracked: showUntracked && available,
 	}, "", nil
 }
 
@@ -209,7 +197,9 @@ func patchName(s string, prefixed bool) string {
 	} else {
 		s = strings.TrimSuffix(s, "\t")
 	}
-	if prefixed && (strings.HasPrefix(s, "a/") || strings.HasPrefix(s, "b/")) {
+	// Git's mnemonic prefixes use i (index), w (working tree), c (commit),
+	// and o (object). Direct capture still forces a/ and b/.
+	if prefixed && len(s) >= 2 && s[1] == '/' && strings.ContainsRune("abiwco", rune(s[0])) {
 		s = s[2:]
 	}
 	return s
@@ -233,16 +223,21 @@ func headerNames(s string) (string, string, error) {
 	} else {
 		// Git leaves spaces unquoted; text headers and rename metadata below
 		// provide the definitive names for those files.
-		split := strings.Index(s, " b/")
-		if split == -1 {
-			split = strings.Index(s, ` "b/`)
+		split := -1
+		delimiter := ""
+		for _, prefix := range []string{"b/", "a/", "i/", "w/", "c/", "o/"} {
+			for _, candidate := range []string{" " + prefix, ` "` + prefix} {
+				if at := strings.Index(s, candidate); at >= 0 && (split < 0 || at < split) {
+					split, delimiter = at, candidate
+				}
+			}
 		}
 		if split >= 0 {
 			old, rest = s[:split], s[split+1:]
 			// For ordinary changes, both paths are identical. Check all
 			// delimiters because a filename itself may contain " b/".
 			for offset := 0; offset < len(s); {
-				next := strings.Index(s[offset:], " b/")
+				next := strings.Index(s[offset:], delimiter)
 				if next < 0 {
 					break
 				}

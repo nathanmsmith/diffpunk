@@ -10,7 +10,6 @@ const statuses: Record<string, string> = {
   deleted: 'D',
   renamed: 'R',
   copied: 'C',
-  untracked: '?',
 };
 
 export function Sidebar({ snapshot }: Props) {

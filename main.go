@@ -27,13 +27,20 @@ var version = "dev"
 func main() { os.Exit(run()) }
 
 func run() int {
-	args, _ := viewerArgs(os.Args[1:])
+	args := os.Args[1:]
 	if len(args) == 1 && args[0] == "--version" {
 		fmt.Println("diff punk", version)
 		return 0
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if len(args) > 0 && args[0] == "--pager" {
+		if len(args) != 1 {
+			fmt.Fprintln(os.Stderr, "diff punk: --pager reads Git output from stdin and takes no diff arguments")
+			return 1
+		}
+		return runPager(ctx)
+	}
 
 	if terminalMode(args) {
 		return passthrough(ctx, args)
@@ -70,6 +77,9 @@ func run() int {
 func serve(ctx context.Context, snapshot *Snapshot) error {
 	listener, err := net.Listen("tcp", "127.0.0.1:5555")
 	if err != nil {
+		if errors.Is(err, syscall.EADDRINUSE) {
+			return fmt.Errorf("viewer port 5555 is already in use; stop the active viewer with Ctrl-C before starting another")
+		}
 		return err
 	}
 	// Serve closes the listener; also clean up if setup fails before Serve starts.

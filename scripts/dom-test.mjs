@@ -54,15 +54,7 @@ const snapshot = {
   repository: '/test/repo',
   arguments: [],
   createdAt: '2026-10-08T12:00:00Z',
-  untrackedAvailable: true,
-  showUntracked: false,
   files: [
-    {
-      name: 'new.ts',
-      kind: 'untracked',
-      patch:
-        'diff --git a/new.ts b/new.ts\nnew file mode 100644\n--- /dev/null\n+++ b/new.ts\n@@ -0,0 +1 @@\n+const fresh = true;\n',
-    },
     { name: 'foo.ts', kind: 'modified', patch, fullPatch: full },
     {
       name: 'binary.dat',
@@ -92,19 +84,7 @@ globalThis.fetch = async (url) => {
   if (scenario === 'invalid-json') return new Response('invalid snapshot');
   return new Response(
     JSON.stringify(
-      scenario === 'empty'
-        ? { ...snapshot, files: [] }
-        : scenario === 'untracked-only'
-          ? { ...snapshot, files: snapshot.files.slice(0, 1) }
-          : scenario === 'untracked-enabled'
-            ? { ...snapshot, showUntracked: true }
-            : scenario === 'historical'
-              ? {
-                  ...snapshot,
-                  untrackedAvailable: false,
-                  files: snapshot.files.slice(1),
-                }
-              : snapshot,
+      scenario === 'empty' ? { ...snapshot, files: [] } : snapshot,
     ),
   );
 };
@@ -134,30 +114,6 @@ try {
         '0',
       );
       assert.equal(window.document.querySelectorAll('#files a').length, 0);
-    } else if (
-      scenario === 'untracked-only' ||
-      scenario === 'untracked-enabled'
-    ) {
-      const toggle = window.document.getElementById('show-untracked');
-      assert.equal(
-        toggle.getAttribute('aria-pressed'),
-        scenario === 'untracked-enabled' ? 'true' : 'false',
-      );
-      if (scenario === 'untracked-only') {
-        assert.match(message, /Enable.*Show untracked files/);
-        toggle.click();
-      }
-      await waitFor(() =>
-        window.document
-          .querySelector('section[data-path="new.ts"] .diff-host')
-          ?.shadowRoot?.textContent.includes('const fresh = true'),
-      );
-      toggle.click();
-      await waitFor(
-        () => !window.document.querySelector('section[data-path="new.ts"]'),
-      );
-    } else if (scenario === 'historical') {
-      assert.equal(window.document.getElementById('show-untracked'), null);
     } else if (scenario === 'http-error') {
       assert.equal(message, 'Could not load snapshot (503)');
     } else if (scenario === 'network-error') {
@@ -265,31 +221,9 @@ try {
       0,
       'Filename interpreted as HTML',
     );
-    const toggle = window.document.getElementById('show-untracked');
-    assert.equal(toggle.getAttribute('aria-pressed'), 'false');
-    toggle.click();
-    await waitFor(() =>
-      window.document
-        .querySelector('section[data-path="new.ts"] .diff-host')
-        ?.shadowRoot?.textContent.includes('const fresh = true'),
-    );
-    assert.equal(window.document.getElementById('file-count').textContent, '4');
-    assert.equal(
-      window.document.querySelector('section[data-path="new.ts"] .file-kind')
-        .textContent,
-      'Untracked',
-    );
     for (const link of window.document.querySelectorAll('#files a')) {
       assert.ok(window.document.querySelector(link.getAttribute('href')));
     }
-    toggle.click();
-    await waitFor(
-      () => window.document.getElementById('file-count').textContent === '3',
-    );
-    assert.equal(
-      window.document.querySelector('section[data-path="new.ts"]'),
-      null,
-    );
     console.log(
       'DOM checks passed: diff stylesheet, syntax colors, actual diff rendering, full-file expansion/collapse, layout toggle, binary summary, escaped filenames.',
     );
@@ -300,9 +234,6 @@ try {
 if (scenario === 'viewer') {
   for (const testCase of [
     'empty',
-    'untracked-only',
-    'untracked-enabled',
-    'historical',
     'http-error',
     'network-error',
     'invalid-json',

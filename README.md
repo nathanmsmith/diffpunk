@@ -1,11 +1,29 @@
 # diff punk
 
-A local, read-only browser viewer for `git diff`. Run the standalone executable
-with the same arguments you would pass to Git:
+A local, read-only browser viewer for `git diff`. Enable it as Git's diff pager:
+
+```sh
+git config --global pager.diff 'diff-punk --pager'
+git diff
+git diff --staged
+git diff main...HEAD -- src/
+```
+
+Git sends its output to diff punk, which opens the browser and keeps the terminal
+occupied until **Ctrl-C**. This setup affects `git diff` only; other Git commands
+keep their existing pager. Git retains control of comparison options and exit
+status. `git --no-pager diff` bypasses the viewer, and redirected or piped Git
+output keeps its normal behavior. To disable the integration:
+
+```sh
+git config --global --unset pager.diff
+```
+
+You can also run the standalone executable with the same arguments you would
+pass to Git:
 
 ```sh
 diff-punk                    # unstaged changes
-diff-punk --untracked        # initially show untracked files
 diff-punk --staged           # staged changes
 diff-punk HEAD               # working tree compared with HEAD
 diff-punk main...HEAD        # branch changes since the merge base
@@ -15,13 +33,15 @@ diff-punk -U10 -- src/       # more context, limited to a path
 The command opens your default browser and keeps a local server running on
 `127.0.0.1:5555`. If port 5555 is already in use, startup fails. Press
 **Ctrl-C** in the terminal to stop it. Each invocation captures a snapshot;
-subsequent edits do not change the viewer. An empty diff exits immediately unless eligible untracked files are present.
+subsequent edits do not change the viewer. An empty diff exits immediately.
+Only one viewer can run at a time; stop it with Ctrl-C before starting another.
 
 The viewer shows all files on one scrolling page, with a file navigation sidebar,
 syntax highlighting, and light/dark colors matching your system. It defaults to
 side-by-side diffs, with a unified toggle (unified by default on narrow screens).
-**Show full file** expands a file's unchanged context; **Show changes only** restores
-the requested Git context. Binary changes and file metadata are shown as summaries.
+**Show full file**, when available, expands a file's unchanged context;
+**Show changes only** restores the requested Git context. Binary changes and
+file metadata are shown as summaries.
 
 Files are ordered by directory depth, then path. Changed tests follow their
 matching implementation immediately, including tests in a separate directory.
@@ -36,6 +56,37 @@ Release builds are standalone executables for macOS and Linux, on ARM64 and x86-
 Download the appropriate archive from this repository's GitHub Releases, verify
 its checksum, extract it, and put `diff-punk` on your `PATH`. Git must be installed;
 Go and Node.js are only needed to build from source.
+
+### Homebrew
+
+The formula in `Formula/diff-punk.rb` builds from `main` with Go and Node.js as
+build dependencies. Until a tagged release is available, install with `--HEAD`.
+For this private repository, first configure Git credentials with access to it
+(for example, `gh auth setup-git` if you use GitHub CLI).
+
+Once the formula is pushed to GitHub:
+
+```sh
+brew tap nathanmsmith/diffpunk https://github.com/nathanmsmith/diffpunk.git
+brew install --HEAD nathanmsmith/diffpunk/diff-punk
+diff-punk
+```
+
+To install the formula from this checkout before pushing it, run from the
+repository root (create the local tap only if it does not already exist):
+
+```sh
+brew tap-new nathanmsmith/diffpunk
+cp Formula/diff-punk.rb "$(brew --repository nathanmsmith/diffpunk)/Formula/diff-punk.rb"
+brew install --HEAD nathanmsmith/diffpunk/diff-punk
+```
+
+The local formula still downloads the source from GitHub's `main` branch. To
+update to the latest commit later:
+
+```sh
+brew upgrade --fetch-HEAD nathanmsmith/diffpunk/diff-punk
+```
 
 ## Build from source
 
@@ -64,28 +115,41 @@ loads everything locally and needs no internet connection at runtime.
 
 ## Git compatibility
 
-Git computes the patches; diff punk controls their transport prefixes and disables
-terminal color for browser rendering. Normal patch options, revisions, whitespace
-filters, diff algorithms, and pathspecs retain Git's selection behavior.
+With direct invocation, Git computes the patches; diff punk controls their
+transport prefixes and disables terminal color for browser rendering. Normal
+patch options, revisions, whitespace filters, diff algorithms, and pathspecs
+retain Git's selection behavior.
 
-Reporting modes (`--stat`, `--name-only`, `--check`, and similar) and specialized
-formats (`--raw`, `--word-diff`, `--binary`, combined diffs, external diff tools,
+In direct mode, reporting modes (`--stat`, `--name-only`, `--check`, and similar)
+and specialized formats (`--raw`, `--word-diff`, `--binary`, combined diffs, external diff tools,
 custom prefixes, and `--no-index`) stay in the terminal. `--quiet` and
 `--exit-code` also pass through, preserving Git's output and exit status.
 Unrecognized patch formats fall back to text output. `--help` invokes Git's diff
 help; `--version` prints the diff punk version.
 
-Full-file context is captured with a second Git invocation before the server
-starts. Keep files stable during startup for the patch and expanded context to
-represent the same state. After startup, both views are frozen. Large files have
-no special limits in v1. Working-tree views capture untracked files too, respecting
-Git ignore rules and supplied pathspecs. **Show untracked files** toggles their
-visibility; they appear as complete added-file diffs labeled **Untracked**.
-They are hidden by default; `--untracked` shows them initially. The browser setting
-lasts only for that page session. If only untracked files exist, the viewer opens
-with a prompt to enable the toggle. Staged and commit-to-commit comparisons omit
-untracked files and hide the toggle. Reporting modes retain Git's normal behavior;
-`--untracked` is stripped before passing those commands to Git.
+In pager mode, Git's supplied patch is the snapshot. Terminal color is removed
+for browser rendering. Full-file context is reconstructed from the patch's Git
+blob IDs and hunks before the server starts. Available blobs are read from Git;
+missing sides are reconstructed in memory with exact hunk/context matching and
+verified against the advertised blob IDs when available. The expanded view
+preserves the supplied changed lines and adds verified unchanged context. It
+does not substitute unverified working-tree contents or rerun the comparison.
+Whitespace filtering, text conversions, missing blobs, or missing blob IDs can
+make reconstruction unavailable; those files omit **Show full file** and still
+display the supplied patch. Binary files are shown as summaries. Untracked files
+are not included in either invocation mode; stage new files to include them in
+`git diff --staged`.
+
+Pager reporting output such as `--stat` and `--name-only`, and unsupported patch
+formats, is printed unchanged without opening a browser. The pager also passes
+stdin through unchanged when its stdout is redirected or piped. Configure
+`pager.diff`, rather than `core.pager`: commit-grouped `git show` and `git log -p`
+output is outside the initial pager scope.
+
+Direct `diff-punk` invocation captures full-file context with a second Git
+invocation before the server starts. Keep files stable during startup for the
+patch and expanded context to represent the same state. After startup, both
+views are frozen. Large files have no special limits in v1.
 
 On Linux, opening the default browser uses `xdg-open`. If opening fails, the
 terminal prints a URL you can open manually. Set `DIFF_PUNK_NO_OPEN=1` to run

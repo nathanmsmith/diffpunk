@@ -13,8 +13,6 @@ export type Snapshot = {
   arguments: string[];
   createdAt: string;
   files: FileSnapshot[];
-  untrackedAvailable?: boolean;
-  showUntracked?: boolean;
 };
 export type Layout = 'split' | 'unified';
 export type ViewOptions = Pick<

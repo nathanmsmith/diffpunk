@@ -147,29 +147,10 @@ try {
     }
   }
   await assertHighlighting();
-  const untracked = page.locator('section[data-path="new.ts"]');
-  assert.equal(await untracked.count(), 0);
-  const toggle = page.getByRole('button', {
-    name: 'Show untracked files',
-    exact: true,
-  });
-  assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
-  await toggle.click();
-  await untracked
-    .locator('pre')
-    .filter({ hasText: 'const fresh = true' })
-    .waitFor();
-  assert.doesNotMatch(await untracked.innerText(), /EDITED_AFTER_SNAPSHOT/);
-  assert.match(await untracked.locator('.file-kind').innerText(), /Untracked/);
+  assert.equal(await page.locator('section[data-path="new.ts"]').count(), 0);
   assert.equal(
     Number(await page.locator('#file-count').innerText()),
     snapshot.files.length,
-  );
-  await toggle.click();
-  await untracked.waitFor({ state: 'detached' });
-  assert.equal(
-    Number(await page.locator('#file-count').innerText()),
-    snapshot.files.length - 1,
   );
   await foo
     .getByRole('button', { name: 'Show full file', exact: true })
@@ -234,8 +215,6 @@ try {
     'true',
   );
   assert.ok(await page.locator('#files').isHidden());
-  assert.ok(await toggle.isVisible());
-  assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
   assert.deepEqual(errors, [], `Browser errors: ${errors.join('\n')}`);
   assert.deepEqual(external, [], `Unexpected external requests: ${external}`);
   await browser.close();

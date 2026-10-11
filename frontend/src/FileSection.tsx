@@ -68,9 +68,7 @@ export function FileSection({ file, index, options }: Props) {
             ? `${file.previousName} → ${file.name}`
             : file.name}
         </h2>
-        <span className="file-kind">
-          {file.kind === 'untracked' ? 'Untracked' : file.kind}
-        </span>
+        <span className="file-kind">{file.kind}</span>
         {canExpand && (
           <button
             aria-expanded={expanded}
