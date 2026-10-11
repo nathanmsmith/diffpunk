@@ -128,7 +128,8 @@ Unrecognized patch formats fall back to text output. `--help` invokes Git's diff
 help; `--version` prints the diff punk version.
 
 In pager mode, Git's supplied patch is the snapshot. Terminal color is removed
-for browser rendering. Full-file context is reconstructed from the patch's Git
+and mnemonic file prefixes are normalized to `a/` and `b/` for browser rendering.
+Full-file context is reconstructed from the patch's Git
 blob IDs and hunks before the server starts. Available blobs are read from Git;
 missing sides are reconstructed in memory with exact hunk/context matching and
 verified against the advertised blob IDs when available. The expanded view
