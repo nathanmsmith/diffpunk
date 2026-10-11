@@ -46,7 +46,7 @@ for (const key of Object.getOwnPropertyNames(window)) {
     });
   }
 }
-const html = await readFile('assets/dist/index.html', 'utf8');
+const html = await readFile('cli/assets/dist/index.html', 'utf8');
 window.document.write(html);
 const patch = `diff --git a/foo.ts b/foo.ts\nindex 1111111..2222222 100644\n--- a/foo.ts\n+++ b/foo.ts\n@@ -10,1 +10,1 @@\n-const value = 1;\n+const value = 2;\n`;
 const full = `diff --git a/foo.ts b/foo.ts\nindex 1111111..2222222 100644\n--- a/foo.ts\n+++ b/foo.ts\n@@ -1,11 +1,11 @@\n // TOP_CONTEXT\n${Array.from({ length: 8 }, () => ' // context\n').join('')}-const value = 1;\n+const value = 2;\n // END_CONTEXT\n`;
@@ -97,7 +97,7 @@ async function waitFor(predicate) {
 }
 try {
   const entry = html.match(/<script[^>]+src="([^"]+)"/)[1];
-  await import(new URL(`../assets/dist/${entry}`, import.meta.url));
+  await import(new URL(`../cli/assets/dist/${entry}`, import.meta.url));
   await waitFor(() => window.document.getElementById('loading'));
   assert.equal(
     window.document.getElementById('loading').textContent,

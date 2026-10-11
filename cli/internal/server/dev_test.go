@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
+
+	"diff-punk/cli/internal/git"
 )
 
 func TestDetectDevServer(t *testing.T) {
@@ -74,7 +76,7 @@ func TestDevFrontendProxy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	snapshot := &Snapshot{Files: []File{{Name: "foo.go", Patch: "frozen"}}}
+	snapshot := &git.Snapshot{Files: []git.File{{Name: "foo.go", Patch: "frozen"}}}
 	handler := snapshotHandler(snapshot, fstest.MapFS{}, "127.0.0.1:1234", "/secret/", target)
 	snapshot.Files[0].Patch = "changed"
 	for _, tc := range []struct {

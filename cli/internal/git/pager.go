@@ -1,45 +1,17 @@
-package main
+package git
 
 import (
 	"context"
 	"fmt"
-	"io"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-
-	"golang.org/x/term"
 )
 
-// Pager mode consumes Git's output, never reruns an inferred comparison, and
-// retains the original bytes for reporting formats and unsupported patches.
-func runPager(ctx context.Context) int {
-	stopRead := context.AfterFunc(ctx, func() { _ = os.Stdin.Close() })
-	defer stopRead()
-	if !term.IsTerminal(int(os.Stdout.Fd())) {
-		_, err := io.Copy(os.Stdout, os.Stdin)
-		if ctx.Err() != nil {
-			return 0
-		}
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "diff punk:", err)
-			return 1
-		}
-		return 0
-	}
-	raw, err := io.ReadAll(os.Stdin)
-	if ctx.Err() != nil {
-		return 0
-	}
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "diff punk:", err)
-		return 1
-	}
-	if len(raw) == 0 {
-		return 0
-	}
+// CapturePager builds a snapshot from supplied Git output without rerunning the diff.
+// Unsupported patches return an error so the CLI can print the original bytes.
+func CapturePager(ctx context.Context, raw []byte) (*Snapshot, error) {
 	files, err := parseFiles(terminalColor.ReplaceAllString(string(raw), ""))
 	if err == nil {
 		for _, file := range files {
@@ -50,11 +22,7 @@ func runPager(ctx context.Context) int {
 		}
 	}
 	if err != nil {
-		if _, err := os.Stdout.Write(raw); err != nil {
-			fmt.Fprintln(os.Stderr, "diff punk:", err)
-			return 1
-		}
-		return 0
+		return nil, err
 	}
 	for i := range files {
 		reconstructContext(ctx, &files[i])
@@ -62,18 +30,14 @@ func runPager(ctx context.Context) int {
 		files[i].FullPatch = normalizePagerPrefixes(files[i].FullPatch)
 	}
 	if ctx.Err() != nil {
-		return 0
+		return nil, ctx.Err()
 	}
-	root, _ := gitCommand(ctx, "rev-parse", "--show-toplevel").Output()
+	root, _ := Command(ctx, "rev-parse", "--show-toplevel").Output()
 	snapshot := &Snapshot{
 		Repository: strings.TrimSpace(string(root)), Arguments: []string{},
 		CreatedAt: time.Now().UTC().Format(time.RFC3339), Files: sortFiles(files),
 	}
-	if err := serve(ctx, snapshot); err != nil {
-		fmt.Fprintln(os.Stderr, "diff punk:", err)
-		return 1
-	}
-	return 0
+	return snapshot, nil
 }
 
 // The browser's diff parser requires a/ and b/ transport prefixes. Git can
@@ -264,7 +228,7 @@ func readBlob(ctx context.Context, id string) (string, bool) {
 	if strings.Trim(id, "0") == "" {
 		return "", false
 	}
-	data, err := gitCommand(ctx, "cat-file", "blob", id).Output()
+	data, err := Command(ctx, "cat-file", "blob", id).Output()
 	return string(data), err == nil && !strings.ContainsRune(string(data), 0)
 }
 
@@ -272,7 +236,7 @@ func matchesBlob(ctx context.Context, content, id string) bool {
 	if strings.Trim(id, "0") == "" {
 		return true // Git sometimes emits zero for an unstored working-tree side.
 	}
-	cmd := gitCommand(ctx, "hash-object", "--stdin")
+	cmd := Command(ctx, "hash-object", "--stdin")
 	cmd.Stdin = strings.NewReader(content)
 	hash, err := cmd.Output()
 	return err == nil && strings.HasPrefix(strings.TrimSpace(string(hash)), id)

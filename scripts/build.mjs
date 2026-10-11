@@ -2,7 +2,7 @@ import { build } from 'vite';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
-const out = 'assets/dist';
+const out = 'cli/assets/dist';
 await build();
 await writeFile(`${out}/.gitkeep`, '');
 

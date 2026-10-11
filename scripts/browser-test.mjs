@@ -19,7 +19,7 @@ try {
     '-ldflags=-X main.development=false',
     '-o',
     binary,
-    '.',
+    './cli',
   ]);
   git('init', '-q');
   git('config', 'user.name', 'Test');

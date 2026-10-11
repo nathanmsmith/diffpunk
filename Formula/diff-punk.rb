@@ -15,9 +15,9 @@ class DiffPunk < Formula
     system "go", "build", *std_go_args(ldflags: [
       "-X main.version=#{version}",
       "-X main.development=false",
-    ]), "."
+    ]), "./cli"
 
-    doc.install "README.md", "assets/dist/THIRD_PARTY_LICENSES.txt"
+    doc.install "README.md", "cli/assets/dist/THIRD_PARTY_LICENSES.txt"
   end
 
   def caveats

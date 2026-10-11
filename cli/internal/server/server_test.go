@@ -1,14 +1,16 @@
-package main
+package server
 
 import (
 	"encoding/json"
 	"net/http/httptest"
 	"testing"
 	"testing/fstest"
+
+	"diff-punk/cli/internal/git"
 )
 
 func TestServerServesFrozenSnapshotAndAssets(t *testing.T) {
-	snapshot := &Snapshot{Files: []File{{Name: "foo.go", Patch: "snapshot"}}}
+	snapshot := &git.Snapshot{Files: []git.File{{Name: "foo.go", Patch: "snapshot"}}}
 	assets := fstest.MapFS{"index.html": {Data: []byte("viewer")}, "assets/main.js": {Data: []byte("javascript")}}
 	handler := snapshotHandler(snapshot, assets, "127.0.0.1:1234", "/secret/", nil)
 	// The handler serializes once; later changes cannot alter the snapshot.
@@ -36,7 +38,7 @@ func TestServerServesFrozenSnapshotAndAssets(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://127.0.0.1:1234/secret/snapshot.json", nil)
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
-	var got Snapshot
+	var got git.Snapshot
 	if err := json.Unmarshal(res.Body.Bytes(), &got); err != nil {
 		t.Fatal(err)
 	}

@@ -6,7 +6,7 @@ frontend:
 
 build: frontend
 	mkdir -p bin
-	CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/diff-punk .
+	CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/diff-punk ./cli
 
 lint-go: frontend
 	golangci-lint config verify
@@ -29,6 +29,6 @@ release: frontend
 	./scripts/release.sh
 
 clean:
-	rm -rf bin release assets/dist
-	mkdir -p assets/dist
-	touch assets/dist/.gitkeep
+	rm -rf bin release cli/assets/dist
+	mkdir -p cli/assets/dist
+	touch cli/assets/dist/.gitkeep

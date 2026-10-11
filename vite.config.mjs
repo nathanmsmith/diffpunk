@@ -29,7 +29,7 @@ export default defineConfig(({ command }) => ({
     cors: false,
   },
   build: {
-    outDir: '../assets/dist',
+    outDir: '../cli/assets/dist',
     emptyOutDir: true,
     target: 'es2022',
   },

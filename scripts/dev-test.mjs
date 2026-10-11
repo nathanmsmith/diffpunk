@@ -210,7 +210,7 @@ try {
     '-ldflags=-X main.development=false',
     '-o',
     releaseBinary,
-    '.',
+    './cli',
   ]);
   const release = await startCLI(releaseBinary);
   assert.doesNotMatch(release.output, /React dev server detected/);

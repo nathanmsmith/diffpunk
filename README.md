@@ -112,6 +112,10 @@ make build
 ./bin/diff-punk
 ```
 
+Go sources live in `cli/`: `internal/git` captures and prepares diffs,
+`internal/server` runs the browser viewer and Vite integration, and `assets/`
+embeds the frontend. The Go module files remain at the repository root.
+
 The frontend uses React, TypeScript, Vite, and `@pierre/diffs`. Go embeds the production
 HTML, JavaScript, CSS, syntax grammars, themes, and third-party licenses. The viewer
 loads everything locally and needs no internet connection at runtime.
@@ -186,11 +190,11 @@ use embedded assets. If Node.js or installed Vite dependencies are unavailable,
 startup explains the problem and falls back to embedded assets. An unrelated
 service on port 5173 also causes a fallback. If Vite stops during a session,
 restart the CLI to start it again. Release archives always use embedded assets.
-Go edits require rebuilding the CLI with `go build -o bin/diff-punk .` and
+Go edits require rebuilding the CLI with `go build -o bin/diff-punk ./cli` and
 restarting it. Run `make build` to rebuild both the frontend and the CLI.
 
 `npm run build` uses Vite to generate production assets and third-party license
-notices in `assets/dist` before Go embeds them.
+notices in `cli/assets/dist` before Go embeds them.
 
 ```sh
 make test                 # build, lint, format, typecheck, Go race, DOM and CLI checks

@@ -1,4 +1,4 @@
-package main
+package git
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// File holds a file change and any available full-file context.
 type File struct {
 	Name         string  `json:"name"`
 	PreviousName string  `json:"previousName,omitempty"`
@@ -21,6 +22,7 @@ type File struct {
 	FullContent  *string `json:"fullContent,omitempty"`
 }
 
+// Snapshot is the frozen diff sent to the browser viewer.
 type Snapshot struct {
 	Repository string   `json:"repository"`
 	Arguments  []string `json:"arguments"`
@@ -28,8 +30,8 @@ type Snapshot struct {
 	Files      []File   `json:"files"`
 }
 
-// Reporting and alternative formats retain their native terminal behavior.
-func terminalMode(args []string) bool {
+// TerminalMode reports whether the arguments require native Git terminal output.
+func TerminalMode(args []string) bool {
 	for _, arg := range args {
 		if arg == "--" {
 			break
@@ -46,21 +48,9 @@ func terminalMode(args []string) bool {
 	return false
 }
 
-func gitCommand(ctx context.Context, args ...string) *exec.Cmd {
+// Command creates a Git command with its pager disabled.
+func Command(ctx context.Context, args ...string) *exec.Cmd {
 	return exec.CommandContext(ctx, "git", append([]string{"--no-pager"}, args...)...)
-}
-
-func passthrough(ctx context.Context, args []string) int {
-	cmd := gitCommand(ctx, append([]string{"diff"}, args...)...)
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-	if err := cmd.Run(); err != nil {
-		if e, ok := err.(*exec.ExitError); ok {
-			return e.ExitCode()
-		}
-		fmt.Fprintln(os.Stderr, "diff punk:", err)
-		return 1
-	}
-	return 0
 }
 
 // Insert format controls before the path separator, leaving all Git selection
@@ -85,8 +75,10 @@ func diffArgs(args, controls []string) []string {
 	return append(result, controls...)
 }
 
-func capture(ctx context.Context, args []string) (*Snapshot, string, error) {
-	cmd := gitCommand(ctx, patchArgs(args, false)...)
+// Capture runs git diff and captures its files and full context.
+// Unsupported patch formats are returned as raw output; an empty diff has no snapshot.
+func Capture(ctx context.Context, args []string) (*Snapshot, string, error) {
+	cmd := Command(ctx, patchArgs(args, false)...)
 	cmd.Stderr = os.Stderr
 	patch, err := cmd.Output()
 	if err != nil {
@@ -101,7 +93,7 @@ func capture(ctx context.Context, args []string) (*Snapshot, string, error) {
 	}
 	// A second patch uses the same selection and diff algorithm, but includes all
 	// context. This also works for staged and historical files and textconv.
-	fullCmd := gitCommand(ctx, patchArgs(args, true)...)
+	fullCmd := Command(ctx, patchArgs(args, true)...)
 	var fullErr bytes.Buffer
 	fullCmd.Stderr = &fullErr
 	full, err := fullCmd.Output()
@@ -120,7 +112,7 @@ func capture(ctx context.Context, args []string) (*Snapshot, string, error) {
 		fmt.Fprintln(os.Stderr, "diff punk: full-file context unavailable:", strings.TrimSpace(fullErr.String()))
 	}
 	captureMetadataContents(ctx, args, files)
-	rootCmd := gitCommand(ctx, "rev-parse", "--show-toplevel")
+	rootCmd := Command(ctx, "rev-parse", "--show-toplevel")
 	root, _ := rootCmd.Output()
 	if len(files) == 0 {
 		return nil, "", nil
@@ -198,7 +190,7 @@ func patchName(s string, prefixed bool) string {
 		s = strings.TrimSuffix(s, "\t")
 	}
 	// Git's mnemonic prefixes use i (index), w (working tree), c (commit),
-	// and o (object). Direct capture still forces a/ and b/.
+	// and o (object). Direct Capture still forces a/ and b/.
 	if prefixed && len(s) >= 2 && s[1] == '/' && strings.ContainsRune("abiwco", rune(s[0])) {
 		s = s[2:]
 	}
@@ -269,7 +261,7 @@ func captureMetadataContents(ctx context.Context, args []string, files []File) {
 	if len(wanted) == 0 {
 		return
 	}
-	raw, err := gitCommand(ctx, diffArgs(args, []string{"--no-color", "--no-patch", "--raw", "-z", "--no-abbrev"})...).Output()
+	raw, err := Command(ctx, diffArgs(args, []string{"--no-color", "--no-patch", "--raw", "-z", "--no-abbrev"})...).Output()
 	if err != nil {
 		return
 	}
@@ -298,7 +290,7 @@ func captureMetadataContents(ctx context.Context, args []string, files []File) {
 		}
 		var content []byte
 		if strings.Trim(object, "0") != "" {
-			content, err = gitCommand(ctx, "cat-file", "blob", object).Output()
+			content, err = Command(ctx, "cat-file", "blob", object).Output()
 			if err != nil || bytes.IndexByte(content, 0) >= 0 {
 				continue
 			}

@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -18,9 +18,6 @@ import (
 const devServerAddress = "http://127.0.0.1:5173"
 const devBase = "/__diff_punk_dev/"
 const devIdentity = "diff-punk-vite-v1"
-
-// Release builds set this to false, including releases with the version "dev".
-var development = "true"
 
 // Only start tools from the checkout containing this development executable,
 // never from the repository whose diff the user is viewing.
@@ -55,9 +52,9 @@ func devCheckout() string {
 	return root
 }
 
-func prepareDevServer(ctx context.Context) (*url.URL, func(), error) {
+func prepareDevServer(ctx context.Context, development bool) (*url.URL, func(), error) {
 	noop := func() {}
-	if development != "true" {
+	if !development {
 		return nil, noop, nil
 	}
 	if target := detectDevServer(ctx, devServerAddress, true); target != nil {

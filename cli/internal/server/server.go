@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -13,68 +13,17 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"os/signal"
 	"runtime"
 	"strings"
 	"syscall"
 	"time"
 
-	"diff-punk/assets"
+	"diff-punk/cli/assets"
+	"diff-punk/cli/internal/git"
 )
 
-var version = "dev"
-
-func main() { os.Exit(run()) }
-
-func run() int {
-	args := os.Args[1:]
-	if len(args) == 1 && args[0] == "--version" {
-		fmt.Println("diff punk", version)
-		return 0
-	}
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	if len(args) > 0 && args[0] == "--pager" {
-		if len(args) != 1 {
-			fmt.Fprintln(os.Stderr, "diff punk: --pager reads Git output from stdin and takes no diff arguments")
-			return 1
-		}
-		return runPager(ctx)
-	}
-
-	if terminalMode(args) {
-		return passthrough(ctx, args)
-	}
-
-	// Git implicitly uses --no-index outside a repository. Keep that comparison
-	// and its exit status in the terminal, just like explicit --no-index.
-	if err := gitCommand(ctx, "rev-parse", "--git-dir").Run(); err != nil {
-		return passthrough(ctx, args)
-	}
-
-	snapshot, raw, err := capture(ctx, os.Args[1:])
-	if err != nil {
-		if e, ok := err.(*exec.ExitError); ok {
-			return e.ExitCode()
-		}
-		fmt.Fprintln(os.Stderr, "diff punk:", err)
-		return 1
-	}
-	if raw != "" {
-		fmt.Print(raw)
-		return 0
-	}
-	if snapshot == nil {
-		return 0
-	}
-	if err := serve(ctx, snapshot); err != nil {
-		fmt.Fprintln(os.Stderr, "diff punk:", err)
-		return 1
-	}
-	return 0
-}
-
-func serve(ctx context.Context, snapshot *Snapshot) error {
+// Serve runs the local viewer until its session closes or the context is canceled.
+func Serve(ctx context.Context, snapshot *git.Snapshot, development bool) error {
 	ctx, cancelSession := context.WithCancel(ctx)
 	defer cancelSession()
 	listener, err := net.Listen("tcp", "127.0.0.1:5555")
@@ -86,7 +35,7 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	}
 	// Serve closes the listener; also clean up if setup fails before Serve starts.
 	defer func() { _ = listener.Close() }()
-	devServer, stopDevServer, err := prepareDevServer(ctx)
+	devServer, stopDevServer, err := prepareDevServer(ctx, development)
 	defer stopDevServer()
 	if ctx.Err() != nil {
 		return nil
@@ -139,11 +88,11 @@ func serve(ctx context.Context, snapshot *Snapshot) error {
 	}
 }
 
-func snapshotHandler(snapshot *Snapshot, assets fs.FS, address, prefix string, devServer *url.URL) http.Handler {
+func snapshotHandler(snapshot *git.Snapshot, assets fs.FS, address, prefix string, devServer *url.URL) http.Handler {
 	return snapshotHandlerWithSession(snapshot, assets, address, prefix, devServer, nil)
 }
 
-func snapshotHandlerWithSession(snapshot *Snapshot, assets fs.FS, address, prefix string, devServer *url.URL, session *viewerSession) http.Handler {
+func snapshotHandlerWithSession(snapshot *git.Snapshot, assets fs.FS, address, prefix string, devServer *url.URL, session *viewerSession) http.Handler {
 	data, _ := json.Marshal(snapshot)
 	static := http.StripPrefix(prefix, http.FileServer(http.FS(assets)))
 	if devServer != nil {

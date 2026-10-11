@@ -8,9 +8,9 @@ for task_target_os in darwin linux; do
     task_release_dir="release/$task_release_name"
     mkdir -p "$task_release_dir"
     CGO_ENABLED=0 GOOS="$task_target_os" GOARCH="$task_target_arch" \
-      go build -trimpath -ldflags="-s -w -X main.version=$version -X main.development=false" -o "$task_release_dir/diff-punk" .
+      go build -trimpath -ldflags="-s -w -X main.version=$version -X main.development=false" -o "$task_release_dir/diff-punk" ./cli
     cp README.md "$task_release_dir/README.md"
-    cp assets/dist/THIRD_PARTY_LICENSES.txt "$task_release_dir/THIRD_PARTY_LICENSES.txt"
+    cp cli/assets/dist/THIRD_PARTY_LICENSES.txt "$task_release_dir/THIRD_PARTY_LICENSES.txt"
     tar -czf "release/$task_release_name.tar.gz" -C "$task_release_dir" .
     rm -rf "$task_release_dir"
   done
