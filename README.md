@@ -41,6 +41,18 @@ Go and Node.js are only needed to build from source.
 
 Requires Go 1.24+, Node.js 24+, npm, Git, and Make:
 
+With [mise](https://mise.jdx.dev/), install the versions configured in
+`mise.toml` (including golangci-lint for development checks), then build:
+
+```sh
+mise install
+mise exec -- make build
+./bin/diff-punk
+```
+
+If mise is activated in your shell, you can run `make build` directly.
+With the required tools already on your `PATH`:
+
 ```sh
 make build
 ./bin/diff-punk
@@ -126,7 +138,8 @@ Prettier handles formatting; `npm run lint` and `npm run format:check` check wit
 changing files. Both checks also run in CI through `make test`.
 
 Go checks use golangci-lint v2.13.2 with `errcheck`, `govet`, `ineffassign`,
-`staticcheck`, `unused`, `gofmt`, and `goimports`. Install the same version used in CI with the
+`staticcheck`, `unused`, `gofmt`, and `goimports`. `mise install` provides the same
+version used in CI. Alternatively, install it with the
 [official binary installer](https://golangci-lint.run/docs/welcome/install/local/):
 
 ```sh
