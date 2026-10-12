@@ -6,7 +6,7 @@ frontend:
 
 build: frontend
 	mkdir -p bin
-	CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/diff-punk ./cli
+	CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/dp ./cli
 
 lint-go: frontend
 	golangci-lint config verify
