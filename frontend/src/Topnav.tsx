@@ -1,5 +1,5 @@
 import { Button } from './Button';
-import { cn } from './cn';
+import { cn } from 'cn';
 import type { Layout } from './types';
 
 interface Props {

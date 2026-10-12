@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { processFile } from '@pierre/diffs';
-import { cn } from '../cn';
+import { cn } from 'cn';
 import type { Snapshot } from '../types';
 import { LineStats } from './LineStats';
 

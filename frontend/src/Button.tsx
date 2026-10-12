@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { cn } from './cn';
+import { cn } from 'cn';
 
 interface Props extends ComponentProps<'button'> {
   variant?: 'default' | 'layout';
