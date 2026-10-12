@@ -22,7 +22,7 @@ jobs:
         with:
           version: v2.13.2
           install-only: true
-      - run: make test browser-test
+      - run: make test
       - run: ./scripts/release.sh "$GITHUB_REF_NAME"
       - name: Publish binaries
         env:

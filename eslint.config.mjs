@@ -26,10 +26,5 @@ export default defineConfig([
     files: ['**/*.{js,mjs,cjs}'],
     languageOptions: { globals: globals.node },
   },
-  {
-    // Playwright callbacks execute in the browser.
-    files: ['scripts/browser-test.mjs', 'scripts/dev-test.mjs'],
-    languageOptions: { globals: globals.browser },
-  },
   prettier,
 ]);

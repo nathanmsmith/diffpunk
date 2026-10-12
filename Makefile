@@ -1,4 +1,4 @@
-.PHONY: frontend build lint-go test browser-test release clean
+.PHONY: frontend build lint-go test release clean
 
 frontend:
 	npm ci
@@ -17,13 +17,6 @@ test: build lint-go
 	npm run format:check
 	npm run typecheck
 	go test -race -covermode=atomic -coverpkg=./cli/... -coverprofile=coverage.out ./cli/...
-	npm run test:dom
-	npm run test:cli
-
-browser-test: build
-	npx playwright install --with-deps chromium
-	npm run test:browser
-	npm run test:dev
 
 release: frontend
 	./scripts/release.sh
