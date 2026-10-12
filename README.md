@@ -1,6 +1,11 @@
 # diffpunk
 
-![](./diffpunk.png)
+<table>
+  <tr>
+    <td><img src="./diffpunk-browser.png" alt="diffpunk browser" /></td>
+    <td><img src="./diffpunk-cli.png" alt="diffpunk CLI" /></td>
+  </tr>
+</table>
 
 A local, read-only browser viewer for `git diff`. Enable it as Git's diff pager:
 
