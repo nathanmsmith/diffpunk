@@ -1,2 +1,3 @@
 - Define component props with `interface Props`
-- Do not use arbitrary Tailwind class syntax: bracketed values, properties, or variants, or parenthesized CSS-variable shorthand. Define named theme tokens, utilities, or variants in `style.css` instead; ESLint enforces this for class expressions.
+- Do not use bracketed value Tailwind class syntax
+- Do not update frontend/src/style.css

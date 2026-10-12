@@ -46,10 +46,12 @@ export function Sidebar({ snapshot }: Props) {
 
   return (
     <aside
+      id="sidebar"
       className={cn(
         'min-h-0',
-        'w-60',
-        'shrink-0',
+        'min-w-0',
+        'w-full',
+        'flex-1',
         'overflow-auto',
         'border-0',
         'border-r',

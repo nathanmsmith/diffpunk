@@ -2,6 +2,7 @@ import { cn } from 'cn';
 import { useMemo, useState } from 'react';
 import { FileSection } from './FileSection';
 import { Sidebar } from './Sidebar/Sidebar';
+import { SidebarPanel } from './Sidebar/SidebarPanel';
 import { Header } from './Header';
 import type { Layout, ViewOptions } from './types';
 import { useSnapshot } from './hooks/useSnapshot';
@@ -27,7 +28,9 @@ export function App() {
     <div className={cn('flex', 'h-dvh', 'flex-col')}>
       <Header layout={layout} onLayoutChange={setLayout} />
       <div className={cn('flex', 'min-h-0', 'flex-1', 'mobile:flex-col')}>
-        <Sidebar snapshot={snapshot} />
+        <SidebarPanel>
+          <Sidebar snapshot={snapshot} />
+        </SidebarPanel>
         <main
           className={cn(
             'min-h-0',
