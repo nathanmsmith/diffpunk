@@ -45,12 +45,48 @@ export function Sidebar({ snapshot }: Props) {
   }, [snapshot?.files]);
 
   return (
-    <aside className="min-h-0 w-60 shrink-0 overflow-auto border-0 border-r border-solid border-border px-3 py-6 mobile:w-full mobile:border-r-0 mobile:border-b mobile:py-3 mobile:shrink">
-      <div className="px-2.5 pb-4">
-        <div className="flex justify-between text-xs font-semibold tracking-widest text-muted">
+    <aside
+      className={cn(
+        'min-h-0',
+        'w-60',
+        'shrink-0',
+        'overflow-auto',
+        'border-0',
+        'border-r',
+        'border-solid',
+        'border-border',
+        'px-3',
+        'py-6',
+        'mobile:w-full',
+        'mobile:border-r-0',
+        'mobile:border-b',
+        'mobile:py-3',
+        'mobile:shrink',
+      )}
+    >
+      <div className={cn('px-2.5', 'pb-4')}>
+        <div
+          className={cn(
+            'flex',
+            'justify-between',
+            'text-xs',
+            'font-semibold',
+            'tracking-widest',
+            'text-muted',
+          )}
+        >
           FILES <span id="file-count">{snapshot?.files.length}</span>
         </div>
-        <div className="flex justify-between text-xs font-semibold tracking-widest text-muted">
+        <div
+          className={cn(
+            'flex',
+            'justify-between',
+            'text-xs',
+            'font-semibold',
+            'tracking-widest',
+            'text-muted',
+          )}
+        >
           LINES <LineStats additions={additions} deletions={deletions} />
         </div>
       </div>
@@ -60,14 +96,27 @@ export function Sidebar({ snapshot }: Props) {
             key={file.name}
             href={`#${encodeURIComponent(`file-${file.name}`)}`}
             className={cn(
-              'flex flex-col items-start gap-2 rounded-md px-2.5 py-2 text-sm text-fg no-underline hover:bg-hover',
-              activeFile === file.name && 'active bg-hover',
+              'flex',
+              'flex-col',
+              'items-start',
+              'gap-2',
+              'rounded-md',
+              'px-2.5',
+              'py-2',
+              'text-sm',
+              'text-fg',
+              'no-underline',
+              'hover:bg-hover',
+              activeFile === file.name && 'active',
+              activeFile === file.name && 'bg-hover',
             )}
             onClick={() => setActiveFile(file.name)}
           >
-            <div className="min-w-0 flex-1 wrap-anywhere">{file.name}</div>
-            <div className="flex gap-2">
-              <span className="font-mono text-muted">
+            <div className={cn('min-w-0', 'flex-1', 'wrap-anywhere')}>
+              {file.name}
+            </div>
+            <div className={cn('flex', 'gap-2')}>
+              <span className={cn('font-mono', 'text-muted')}>
                 {statuses[file.kind] ?? 'M'}
               </span>
               <LineStats binary={binary} {...stats} />
@@ -76,7 +125,14 @@ export function Sidebar({ snapshot }: Props) {
         ))}
       </nav>
       <div
-        className="mx-2.5 my-6 whitespace-pre-wrap text-xs leading-relaxed text-muted"
+        className={cn(
+          'mx-2.5',
+          'my-6',
+          'whitespace-pre-wrap',
+          'text-xs',
+          'leading-relaxed',
+          'text-muted',
+        )}
         id="snapshot-time"
       >
         {snapshot &&

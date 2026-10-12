@@ -10,15 +10,27 @@ export function Button({
   className = '',
   ...props
 }: Props) {
-  const styles =
-    variant === 'layout'
-      ? 'border-0 bg-transparent px-2.5 py-1.5 text-muted aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:shadow-sm mobile:px-2 mobile:text-xs'
-      : 'border border-solid border-border bg-surface px-2.5 py-1.5 text-fg hover:bg-hover';
-
   return (
     <button
       {...props}
-      className={cn('cursor-pointer rounded-md', styles, className)}
+      className={cn(
+        'cursor-pointer',
+        'rounded-md',
+        variant === 'layout' ? 'border-0' : 'border',
+        variant === 'default' && 'border-solid',
+        variant === 'default' && 'border-border',
+        variant === 'layout' ? 'bg-transparent' : 'bg-surface',
+        'px-2.5',
+        'py-1.5',
+        variant === 'layout' ? 'text-muted' : 'text-fg',
+        variant === 'layout' && 'aria-pressed:bg-surface',
+        variant === 'layout' && 'aria-pressed:text-fg',
+        variant === 'layout' && 'aria-pressed:shadow-sm',
+        variant === 'layout' && 'mobile:px-2',
+        variant === 'layout' && 'mobile:text-xs',
+        variant === 'default' && 'hover:bg-hover',
+        className,
+      )}
     />
   );
 }

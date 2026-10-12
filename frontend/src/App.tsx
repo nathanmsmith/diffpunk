@@ -1,3 +1,4 @@
+import { cn } from 'cn';
 import { useMemo, useState } from 'react';
 import { FileSection } from './FileSection';
 import { Sidebar } from './Sidebar/Sidebar';
@@ -27,35 +28,54 @@ export function App() {
     : '';
 
   return (
-    <div className="flex h-dvh flex-col">
+    <div className={cn('flex', 'h-dvh', 'flex-col')}>
       <Topnav
         repository={repository}
         repositoryPath={snapshot?.repository}
         layout={layout}
         onLayoutChange={setLayout}
       />
-      <div className="flex min-h-0 flex-1 mobile:flex-col">
+      <div className={cn('flex', 'min-h-0', 'flex-1', 'mobile:flex-col')}>
         <Sidebar snapshot={snapshot} />
-        <main className="min-h-0 min-w-0 flex-1 overflow-auto px-6 mobile:px-3">
-          <div className="py-6 mobile:py-3">
+        <main
+          className={cn(
+            'min-h-0',
+            'min-w-0',
+            'flex-1',
+            'overflow-auto',
+            'px-6',
+            'mobile:px-3',
+          )}
+        >
+          <div className={cn('py-6', 'mobile:py-3')}>
             {refreshError && (
-              <div className="p-6 text-center text-muted" role="status">
+              <div
+                className={cn('p-6', 'text-center', 'text-muted')}
+                role="status"
+              >
                 {refreshError} Keeping the last diff; retrying automatically.
               </div>
             )}
             {load.status === 'loading' && (
-              <div className="p-6 text-center text-muted" id="loading">
+              <div
+                className={cn('p-6', 'text-center', 'text-muted')}
+                id="loading"
+              >
                 Loading diff…
               </div>
             )}
             {load.status === 'error' && (
-              <div className="p-6 text-center text-muted">{load.message}</div>
+              <div className={cn('p-6', 'text-center', 'text-muted')}>
+                {load.message}
+              </div>
             )}
             {snapshot?.files.map((file) => (
               <FileSection key={file.name} file={file} options={options} />
             ))}
             {snapshot?.files.length === 0 && (
-              <div className="p-6 text-center text-muted">No changes.</div>
+              <div className={cn('p-6', 'text-center', 'text-muted')}>
+                No changes.
+              </div>
             )}
           </div>
         </main>

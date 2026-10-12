@@ -1,3 +1,4 @@
+import { cn } from 'cn';
 interface Props {
   additions?: number;
   deletions?: number;
@@ -6,13 +7,15 @@ interface Props {
 
 export function LineStats({ additions, deletions, binary }: Props) {
   if (binary) {
-    return <span className="shrink-0 text-xs text-muted">Binary</span>;
+    return (
+      <span className={cn('shrink-0', 'text-xs', 'text-muted')}>Binary</span>
+    );
   }
 
   if (additions === undefined || deletions === undefined) {
     return (
       <span
-        className="shrink-0 text-xs text-muted"
+        className={cn('shrink-0', 'text-xs', 'text-muted')}
         title="Line counts unavailable"
       >
         —
@@ -22,11 +25,18 @@ export function LineStats({ additions, deletions, binary }: Props) {
 
   return (
     <span
-      className="flex shrink-0 gap-2 font-mono text-xs tabular-nums"
+      className={cn(
+        'flex',
+        'shrink-0',
+        'gap-2',
+        'font-mono',
+        'text-xs',
+        'tabular-nums',
+      )}
       aria-label={`${additions} lines added, ${deletions} lines deleted`}
     >
-      <span className="text-addition">+{additions}</span>
-      <span className="text-deletion">−{deletions}</span>
+      <span className={cn('text-addition')}>+{additions}</span>
+      <span className={cn('text-deletion')}>−{deletions}</span>
     </span>
   );
 }

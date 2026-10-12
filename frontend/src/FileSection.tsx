@@ -1,3 +1,4 @@
+import { cn } from 'cn';
 import { useMemo, useState } from 'react';
 import { hydratePartialDiff, processFile } from '@pierre/diffs';
 import { Button } from './Button';
@@ -80,21 +81,60 @@ export function FileSection({ file, options }: Props) {
 
   return (
     <section
-      className="group mb-6 scroll-mt-24 overflow-clip rounded-lg border border-solid border-border bg-surface"
+      className={cn(
+        'group',
+        'mb-6',
+        'scroll-mt-24',
+        'overflow-clip',
+        'rounded-lg',
+        'border',
+        'border-solid',
+        'border-border',
+        'bg-surface',
+      )}
       id={`file-${file.name}`}
       data-path={file.name}
       data-viewed={viewed}
     >
-      <div className="file-header sticky top-0 z-1 flex items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4 py-3 group-viewed:border-b-0 mobile:gap-2 mobile:p-2.5">
-        <h2 className="m-0 flex-1 font-mono text-sm font-semibold wrap-anywhere">
+      <div
+        className={cn(
+          'file-header',
+          'sticky',
+          'top-0',
+          'z-1',
+          'flex',
+          'items-center',
+          'gap-3',
+          'border-0',
+          'border-b',
+          'border-solid',
+          'border-border',
+          'bg-surface',
+          'px-4',
+          'py-3',
+          'group-viewed:border-b-0',
+          'mobile:gap-2',
+          'mobile:p-2.5',
+        )}
+      >
+        <h2
+          className={cn(
+            'm-0',
+            'flex-1',
+            'font-mono',
+            'text-sm',
+            'font-semibold',
+            'wrap-anywhere',
+          )}
+        >
           {file.previousName
             ? `${file.previousName} → ${file.name}`
             : file.name}
         </h2>
-        <span className="text-xs text-muted">{file.kind}</span>
+        <span className={cn('text-xs', 'text-muted')}>{file.kind}</span>
         {canExpand && (
           <Button
-            className="shrink-0 text-xs"
+            className={cn('shrink-0', 'text-xs')}
             aria-expanded={expanded}
             disabled={expansionFailed}
             onClick={toggleExpanded}
@@ -107,7 +147,13 @@ export function FileSection({ file, options }: Props) {
           </Button>
         )}
         <Button
-          className="mark-viewed shrink-0 text-xs aria-pressed:border-accent aria-pressed:text-accent"
+          className={cn(
+            'mark-viewed',
+            'shrink-0',
+            'text-xs',
+            'aria-pressed:border-accent',
+            'aria-pressed:text-accent',
+          )}
           type="button"
           aria-pressed={viewed}
           aria-label={viewed ? 'Mark as unviewed' : 'Mark as viewed'}
@@ -119,23 +165,42 @@ export function FileSection({ file, options }: Props) {
       <div hidden={viewed}>
         {hasDiff ? (
           <FileDiff
-            className="diff-host"
+            className={cn('diff-host')}
             fileDiff={expanded && full ? full : (expandablePatch ?? patch)}
             options={options}
           />
         ) : (
           <>
-            <div className="p-6 text-center text-muted" hidden={expanded}>
+            <div
+              className={cn('p-6', 'text-center', 'text-muted')}
+              hidden={expanded}
+            >
               {file.patch.includes('Binary files ') ||
               file.patch.includes('GIT binary patch')
                 ? 'Binary file changed'
                 : 'File metadata changed'}
-              <pre className="mb-0 mt-3 whitespace-pre-wrap text-left font-mono text-sm leading-relaxed text-fg wrap-anywhere">
+              <pre
+                className={cn(
+                  'mb-0',
+                  'mt-3',
+                  'whitespace-pre-wrap',
+                  'text-left',
+                  'font-mono',
+                  'text-sm',
+                  'leading-relaxed',
+                  'text-fg',
+                  'wrap-anywhere',
+                )}
+              >
                 {file.patch}
               </pre>
             </div>
             {expanded && (
-              <File className="diff-host" file={contents} options={options} />
+              <File
+                className={cn('diff-host')}
+                file={contents}
+                options={options}
+              />
             )}
           </>
         )}
