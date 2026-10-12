@@ -21,7 +21,7 @@ brew install --HEAD diffpunk
 Enable it as Git's diff pager:
 
 ```
-git config --global pager.diff 'diff-punk --pager'
+git config --global pager.diff 'dp --pager'
 git diff
 git diff --staged
 git diff main...HEAD -- src/
