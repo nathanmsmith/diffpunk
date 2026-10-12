@@ -27,16 +27,16 @@ export function App() {
     : '';
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex h-dvh flex-col">
       <Topnav
         repository={repository}
         repositoryPath={snapshot?.repository}
         layout={layout}
         onLayoutChange={setLayout}
       />
-      <div className="flex flex-1 mobile:flex-col">
+      <div className="flex min-h-0 flex-1 mobile:flex-col">
         <Sidebar snapshot={snapshot} />
-        <main className="min-w-0 flex-1 p-6 mobile:p-3">
+        <main className="min-h-0 min-w-0 flex-1 overflow-auto p-6 mobile:p-3">
           {refreshError && (
             <div className="p-6 text-muted" role="status">
               {refreshError} Keeping the last diff; retrying automatically.

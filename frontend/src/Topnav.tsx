@@ -22,6 +22,7 @@ export function Topnav({
         'top-0',
         'z-10',
         'flex',
+        'shrink-0',
         'items-center',
         'h-18',
         'px-6',
