@@ -18,8 +18,7 @@
   --spacing: 4px;
   --spacing-control-y: 5px;
   --spacing-control-mobile-x: 7px;
-  --spacing-toolbar: 58px;
-  --spacing-repository: 80px;
+  --spacing-toolbar: var(--toolbar-height);
   --spacing-sidebar: calc(100vh - var(--toolbar-height));
 
   --text-label: 10px;
@@ -30,6 +29,7 @@
   --font-weight-brand: 750;
   --tracking-label: 1px;
   --tracking-brand: -0.8px;
+  --leading-brand: 1;
   --leading-relaxed: 1.6;
   --radius-control: 6px;
   --radius-panel: 8px;

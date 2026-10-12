@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { cn } from './cn';
 import type { Snapshot } from './types';
 
 interface Props {
@@ -24,7 +25,10 @@ export function Sidebar({ snapshot }: Props) {
           <a
             key={file.name}
             href={`#file-${index}`}
-            className={`flex items-start gap-2 rounded-control px-2.5 py-2 text-body text-fg no-underline hover:bg-hover ${activeFile === file.name ? 'active bg-hover' : ''}`}
+            className={cn(
+              'flex items-start gap-2 rounded-control px-2.5 py-2 text-body text-fg no-underline hover:bg-hover',
+              activeFile === file.name && 'active bg-hover',
+            )}
             onClick={() => setActiveFile(file.name)}
           >
             <span className="shrink-0 font-status text-muted">

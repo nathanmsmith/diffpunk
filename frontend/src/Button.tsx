@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react';
+import { cn } from './cn';
 
 interface Props extends ComponentProps<'button'> {
   variant?: 'default' | 'layout';
@@ -17,7 +18,7 @@ export function Button({
   return (
     <button
       {...props}
-      className={`cursor-pointer rounded-control ${styles} ${className}`}
+      className={cn('cursor-pointer rounded-control', styles, className)}
     />
   );
 }
