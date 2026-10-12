@@ -1,9 +1,25 @@
 interface Props {
-  additions: number;
-  deletions: number;
+  additions?: number;
+  deletions?: number;
+  binary?: boolean;
 }
 
-export function LineStats({ additions, deletions }: Props) {
+export function LineStats({ additions, deletions, binary }: Props) {
+  if (binary) {
+    return <span className="shrink-0 text-xs text-muted">Binary</span>;
+  }
+
+  if (additions === undefined || deletions === undefined) {
+    return (
+      <span
+        className="shrink-0 text-xs text-muted"
+        title="Line counts unavailable"
+      >
+        —
+      </span>
+    );
+  }
+
   return (
     <span
       className="flex shrink-0 gap-2 font-mono text-xs tabular-nums"
