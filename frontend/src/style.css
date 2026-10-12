@@ -14,10 +14,6 @@
 @custom-variant hover (&:hover);
 @custom-variant group-viewed (&:is(:where(.group)[data-viewed='true'] *));
 
-@utility grid-cols-workspace {
-  grid-template-columns: 240px minmax(0, 1fr);
-}
-
 /* App defaults layered over Tailwind Preflight. */
 @layer base {
   :root {

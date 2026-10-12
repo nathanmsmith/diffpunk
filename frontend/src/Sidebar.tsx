@@ -16,7 +16,7 @@ const statuses: Record<string, string> = {
 export function Sidebar({ snapshot }: Props) {
   const [activeFile, setActiveFile] = useState<string>();
   return (
-    <aside className="sticky top-18 self-start overflow-auto border-0 border-r border-solid border-border px-3 py-6 mobile:static mobile:border-r-0 mobile:border-b mobile:py-3">
+    <aside className="sticky top-18 w-60 shrink-0 self-start overflow-auto border-0 border-r border-solid border-border px-3 py-6 mobile:static mobile:w-full mobile:border-r-0 mobile:border-b mobile:py-3">
       <div className="flex justify-between px-2.5 pb-4 text-xs font-semibold tracking-widest text-muted">
         CHANGED FILES <span id="file-count">{snapshot?.files.length}</span>
       </div>
