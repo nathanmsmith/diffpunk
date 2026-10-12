@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -55,7 +56,7 @@ func run() int {
 		return passthrough(ctx, args)
 	}
 
-	snapshot, raw, err := git.Capture(ctx, args)
+	snapshot, raw, err := git.Run(ctx, args, os.Stderr)
 	if err != nil {
 		if e, ok := err.(*exec.ExitError); ok {
 			return e.ExitCode()
@@ -83,8 +84,12 @@ func run() int {
 	if watch {
 		repository := snapshot.Repository
 		refresh = func(ctx context.Context) (*git.Snapshot, error) {
-			next, raw, err := git.CaptureRefresh(ctx, args)
+			var diagnostics bytes.Buffer
+			next, raw, err := git.Run(ctx, args, &diagnostics)
 			if err != nil {
+				if diagnostics.Len() > 0 {
+					err = fmt.Errorf("%w: %s", err, strings.TrimSpace(diagnostics.String()))
+				}
 				return nil, err
 			}
 			if raw != "" {

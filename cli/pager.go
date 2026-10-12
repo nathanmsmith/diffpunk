@@ -39,7 +39,7 @@ func runPager(ctx context.Context) int {
 	if len(raw) == 0 {
 		return 0
 	}
-	snapshot, err := git.CapturePager(ctx, raw)
+	snapshot, err := git.Pager(ctx, raw)
 	if ctx.Err() != nil {
 		return 0
 	}

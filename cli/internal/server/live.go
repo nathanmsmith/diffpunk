@@ -7,7 +7,7 @@ import (
 	"diff-punk/cli/internal/git"
 )
 
-// Refresh reruns the original comparison. Only one capture runs at a time.
+// Refresh reruns the original comparison. Only one comparison runs at a time.
 type Refresh func(context.Context) (*git.Snapshot, error)
 
 type snapshotStore struct {

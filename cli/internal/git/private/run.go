@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// Capture runs the diff with the supplied diagnostics writer.
-func Capture(ctx context.Context, args []string, diagnostics io.Writer) (*Snapshot, string, error) {
+// Run runs the diff with the supplied diagnostics writer.
+func Run(ctx context.Context, args []string, diagnostics io.Writer) (*Snapshot, string, error) {
 	cmd := Command(ctx, patchArgs(args, false)...)
 	cmd.Stderr = diagnostics
 	patch, err := cmd.Output()
@@ -44,7 +44,7 @@ func Capture(ctx context.Context, args []string, diagnostics io.Writer) (*Snapsh
 	} else {
 		_, _ = fmt.Fprintln(diagnostics, "diff punk: full-file context unavailable:", strings.TrimSpace(fullErr.String()))
 	}
-	captureMetadataContents(ctx, args, files)
+	loadMetadataContents(ctx, args, files)
 	rootCmd := Command(ctx, "rev-parse", "--show-toplevel")
 	root, _ := rootCmd.Output()
 	if len(files) == 0 {

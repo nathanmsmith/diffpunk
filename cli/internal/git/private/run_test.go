@@ -1,7 +1,9 @@
 package private
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -53,9 +55,9 @@ func writeTest(t *testing.T, name, contents string) {
 
 func takeSnapshot(t *testing.T, args ...string) *Snapshot {
 	t.Helper()
-	snapshot, raw, err := Capture(context.Background(), args, os.Stderr)
+	snapshot, raw, err := Run(context.Background(), args, os.Stderr)
 	if err != nil || raw != "" || snapshot == nil {
-		t.Fatalf("capture %v: %v, raw %q, snapshot %v", args, err, raw, snapshot)
+		t.Fatalf("run %v: %v, raw %q, snapshot %v", args, err, raw, snapshot)
 	}
 	return snapshot
 }
@@ -192,8 +194,21 @@ func TestGitOutputPreserved(t *testing.T) {
 
 func TestEmptyDiff(t *testing.T) {
 	testRepo(t)
-	snapshot, raw, err := Capture(context.Background(), nil, os.Stderr)
+	snapshot, raw, err := Run(context.Background(), nil, os.Stderr)
 	if err != nil || snapshot != nil || raw != "" {
 		t.Fatalf("empty diff: %v %q %v", snapshot, raw, err)
+	}
+}
+
+func TestRunDiagnostics(t *testing.T) {
+	testRepo(t)
+	var diagnostics bytes.Buffer
+	snapshot, raw, err := Run(context.Background(), []string{"missing-revision"}, &diagnostics)
+	var exitErr *exec.ExitError
+	if !errors.As(err, &exitErr) || snapshot != nil || raw != "" {
+		t.Fatalf("failed comparison: %v %q %v", snapshot, raw, err)
+	}
+	if !strings.Contains(diagnostics.String(), "missing-revision") {
+		t.Fatalf("missing Git diagnostics: %q", diagnostics.String())
 	}
 }
