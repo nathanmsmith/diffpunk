@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { processFile, type FileDiffMetadata } from '@pierre/diffs';
+import { hydratePartialDiff, processFile } from '@pierre/diffs';
 import { Button } from './Button';
 import { File, FileDiff } from '@pierre/diffs/react';
 import type { FileSnapshot, ViewOptions } from './types';
@@ -24,7 +24,32 @@ export function FileSection({ file, index, options }: Props) {
   }, [file.patch, file.name]);
   const [expanded, setExpanded] = useState(false);
   const [viewed, setViewed] = useState(false);
-  const [full, setFull] = useState<FileDiffMetadata>();
+  const { full, expandablePatch } = useMemo(() => {
+    if (!patch || !file.fullPatch) return {};
+    try {
+      const full = processFile(file.fullPatch, {
+        throwOnError: true,
+        cacheKey: `full-${file.name}`,
+      });
+      if (!full) return {};
+      const expandablePatch = patch.isPartial
+        ? hydratePartialDiff('clone', patch, {
+            oldFile: {
+              name: file.previousName ?? file.name,
+              contents: full.deletionLines.join(''),
+            },
+            newFile: {
+              name: file.name,
+              contents: full.additionLines.join(''),
+            },
+          })
+        : patch;
+      return { full, expandablePatch };
+    } catch (error) {
+      console.error(error);
+      return {};
+    }
+  }, [patch, file.fullPatch, file.name, file.previousName]);
   const [expansionFailed, setExpansionFailed] = useState(false);
   const hasDiff = patch !== undefined && patch.hunks.length > 0;
   const canExpand = hasDiff
@@ -42,12 +67,7 @@ export function FileSection({ file, index, options }: Props) {
   function toggleExpanded() {
     try {
       if (hasDiff && !expanded && !full) {
-        const parsed = processFile(file.fullPatch!, {
-          throwOnError: true,
-          cacheKey: `full-${file.name}`,
-        });
-        if (!parsed) throw new Error('Full-file context is unavailable');
-        setFull(parsed);
+        throw new Error('Full-file context is unavailable');
       }
       setExpanded(!expanded);
     } catch (error) {
@@ -98,7 +118,7 @@ export function FileSection({ file, index, options }: Props) {
         {hasDiff ? (
           <FileDiff
             className="diff-host"
-            fileDiff={expanded && full ? full : patch}
+            fileDiff={expanded && full ? full : (expandablePatch ?? patch)}
             options={options}
           />
         ) : (
