@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { processFile } from '@pierre/diffs';
 import { cn } from 'cn';
 import type { Snapshot } from '../types';
@@ -6,6 +6,7 @@ import { LineStats } from './LineStats';
 
 interface Props {
   snapshot?: Snapshot;
+  activeFile?: string;
 }
 
 const statuses: Record<string, string> = {
@@ -15,8 +16,19 @@ const statuses: Record<string, string> = {
   copied: 'C',
 };
 
-export function Sidebar({ snapshot }: Props) {
-  const [activeFile, setActiveFile] = useState<string>();
+export function Sidebar({ snapshot, activeFile }: Props) {
+  const sidebar = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const container = sidebar.current;
+    const active = container?.querySelector<HTMLElement>('[aria-current]');
+    if (!container || !active) return;
+    const bounds = container.getBoundingClientRect();
+    const row = active.getBoundingClientRect();
+    const top = bounds.top + container.clientTop;
+    const bottom = top + container.clientHeight;
+    if (row.top < top) container.scrollTop += row.top - top;
+    else if (row.bottom > bottom) container.scrollTop += row.bottom - bottom;
+  }, [activeFile, snapshot?.files]);
   const { files, additions, deletions } = useMemo(() => {
     let additions = 0;
     let deletions = 0;
@@ -46,6 +58,7 @@ export function Sidebar({ snapshot }: Props) {
 
   return (
     <aside
+      ref={sidebar}
       id="sidebar"
       className={cn(
         'min-h-0',
@@ -112,6 +125,7 @@ export function Sidebar({ snapshot }: Props) {
           <a
             key={file.name}
             href={`#${encodeURIComponent(`file-${file.name}`)}`}
+            aria-current={activeFile === file.name ? 'location' : undefined}
             className={cn(
               'flex',
               'flex-col',
@@ -122,11 +136,13 @@ export function Sidebar({ snapshot }: Props) {
               'text-sm',
               'text-fg',
               'no-underline',
+              'transition-colors',
+              'duration-200',
+              'ease-out',
               'hover:bg-hover',
               activeFile === file.name && 'active',
               activeFile === file.name && 'bg-hover',
             )}
-            onClick={() => setActiveFile(file.name)}
           >
             <div className={cn('min-w-0', 'flex-1', 'wrap-anywhere')}>
               {file.name}

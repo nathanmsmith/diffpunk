@@ -84,7 +84,6 @@ export function FileSection({ file, options }: Props) {
       className={cn(
         'group',
         'mb-6',
-        'scroll-mt-24',
         'overflow-clip',
         'rounded-lg',
         'border',
