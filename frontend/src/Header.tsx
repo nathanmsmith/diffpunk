@@ -7,7 +7,7 @@ interface Props {
   onLayoutChange: (layout: Layout) => void;
 }
 
-export function Topnav({ layout, onLayoutChange }: Props) {
+export function Header({ layout, onLayoutChange }: Props) {
   return (
     <header
       className={cn(
