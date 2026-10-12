@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FileSection } from './FileSection';
 import { Sidebar } from './Sidebar';
 import { Topnav } from './Topnav';
@@ -12,7 +12,6 @@ type LoadState =
 export function App() {
   const [load, setLoad] = useState<LoadState>({ status: 'loading' });
   const [refreshError, setRefreshError] = useState<string>();
-  const anchor = useRef<{ path: string; top: number } | undefined>(undefined);
   const [layout, setLayout] = useState<Layout>(() =>
     matchMedia('(max-width: 800px)').matches ? 'unified' : 'split',
   );
@@ -50,21 +49,6 @@ export function App() {
           throw new Error(`Could not load snapshot (${response.status})`);
         const snapshot: Snapshot = await response.json();
         if (!controller.signal.aborted) {
-          const sections = document.querySelectorAll<HTMLElement>(
-            '#diffs section[data-path]',
-          );
-          const headerBottom =
-            document.querySelector('header')?.getBoundingClientRect().bottom ??
-            0;
-          const current = Array.from(sections).find(
-            (section) => section.getBoundingClientRect().bottom > headerBottom,
-          );
-          anchor.current = current
-            ? {
-                path: current.dataset.path!,
-                top: current.getBoundingClientRect().top,
-              }
-            : undefined;
           loaded = true;
           setLoad({ status: 'loaded', snapshot });
           setRefreshError(snapshot.refreshError);
@@ -111,40 +95,6 @@ export function App() {
       disconnect();
     };
   }, []);
-
-  useLayoutEffect(() => {
-    const saved = anchor.current;
-    anchor.current = undefined;
-    if (!saved) return;
-    const section = document.getElementById(`file-${saved.path}`);
-    if (!section) return;
-    const restore = () =>
-      window.scrollBy(0, section.getBoundingClientRect().top - saved.top);
-    restore();
-    const frame = requestAnimationFrame(restore);
-    // Syntax highlighting can change heights after React commits the update.
-    const observer = new ResizeObserver(restore);
-    const diffs = document.getElementById('diffs');
-    if (diffs) observer.observe(diffs);
-    observer.observe(section);
-    const stop = () => {
-      observer.disconnect();
-      cancelAnimationFrame(frame);
-      window.removeEventListener('wheel', stop);
-      window.removeEventListener('touchstart', stop);
-      window.removeEventListener('pointerdown', stop);
-      window.removeEventListener('keydown', stop);
-    };
-    window.addEventListener('wheel', stop, { passive: true });
-    window.addEventListener('touchstart', stop, { passive: true });
-    window.addEventListener('pointerdown', stop);
-    window.addEventListener('keydown', stop);
-    const timeout = setTimeout(stop, 1000);
-    return () => {
-      clearTimeout(timeout);
-      stop();
-    };
-  }, [load]);
 
   const snapshot = load.status === 'loaded' ? load.snapshot : undefined;
   const repository = snapshot
