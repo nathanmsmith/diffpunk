@@ -3,18 +3,11 @@ import { cn } from 'cn';
 import type { Layout } from './types';
 
 interface Props {
-  repository: string;
-  repositoryPath?: string;
   layout: Layout;
   onLayoutChange: (layout: Layout) => void;
 }
 
-export function Topnav({
-  repository,
-  repositoryPath,
-  layout,
-  onLayoutChange,
-}: Props) {
+export function Topnav({ layout, onLayoutChange }: Props) {
   return (
     <header
       className={cn(
@@ -24,6 +17,7 @@ export function Topnav({
         'flex',
         'shrink-0',
         'items-center',
+        'justify-between',
         'h-18',
         'px-6',
         'mobile:px-3',
@@ -52,19 +46,6 @@ export function Topnav({
         <br />
         punk
       </h1>
-      <div
-        className={cn(
-          'min-w-0',
-          'flex-1',
-          'truncate',
-          'text-muted',
-          'mobile:text-xs',
-        )}
-        id="repository"
-        title={repositoryPath}
-      >
-        {repository}
-      </div>
       <div
         className={cn(
           'flex',

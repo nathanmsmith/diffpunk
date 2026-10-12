@@ -54,7 +54,8 @@ func Run(ctx context.Context, args []string, diagnostics io.Writer) (*Snapshot, 
 	}
 	return &Snapshot{
 		Repository: strings.TrimSpace(string(root)), Arguments: append([]string{}, args...),
-		CreatedAt: time.Now().UTC().Format(time.RFC3339),
-		Files:     sortFiles(files),
+		RepositoryDisplay: repositoryDisplay(strings.TrimSpace(string(root))),
+		CreatedAt:         time.Now().UTC().Format(time.RFC3339),
+		Files:             sortFiles(files),
 	}, "", nil
 }

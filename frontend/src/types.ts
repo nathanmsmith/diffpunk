@@ -10,6 +10,7 @@ export type FileSnapshot = {
 };
 export type Snapshot = {
   repository: string;
+  repositoryDisplay?: string;
   arguments: string[];
   createdAt: string;
   files: FileSnapshot[];

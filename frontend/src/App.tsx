@@ -22,19 +22,10 @@ export function App() {
   );
 
   const snapshot = load.status === 'loaded' ? load.snapshot : undefined;
-  const repository = snapshot
-    ? (snapshot.repository.split('/').filter(Boolean).at(-1) ??
-      snapshot.repository)
-    : '';
 
   return (
     <div className={cn('flex', 'h-dvh', 'flex-col')}>
-      <Topnav
-        repository={repository}
-        repositoryPath={snapshot?.repository}
-        layout={layout}
-        onLayoutChange={setLayout}
-      />
+      <Topnav layout={layout} onLayoutChange={setLayout} />
       <div className={cn('flex', 'min-h-0', 'flex-1', 'mobile:flex-col')}>
         <Sidebar snapshot={snapshot} />
         <main

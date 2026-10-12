@@ -65,6 +65,21 @@ export function Sidebar({ snapshot }: Props) {
       )}
     >
       <div className={cn('px-2.5', 'pb-4')}>
+        {snapshot?.repository && (
+          <div
+            className={cn(
+              'mb-4',
+              'font-mono',
+              'text-sm',
+              'text-muted',
+              'wrap-anywhere',
+            )}
+            id="repository"
+            title={snapshot.repository}
+          >
+            {snapshot.repositoryDisplay ?? snapshot.repository}
+          </div>
+        )}
         <div
           className={cn(
             'flex',
@@ -99,7 +114,6 @@ export function Sidebar({ snapshot }: Props) {
               'flex',
               'flex-col',
               'items-start',
-              'gap-2',
               'rounded-md',
               'px-2.5',
               'py-2',
@@ -115,8 +129,8 @@ export function Sidebar({ snapshot }: Props) {
             <div className={cn('min-w-0', 'flex-1', 'wrap-anywhere')}>
               {file.name}
             </div>
-            <div className={cn('flex', 'gap-2')}>
-              <span className={cn('font-mono', 'text-muted')}>
+            <div className={cn('flex', 'items-baseline', 'gap-2')}>
+              <span className={cn('font-mono', 'text-xs', 'text-muted')}>
                 {statuses[file.kind] ?? 'M'}
               </span>
               <LineStats binary={binary} {...stats} />

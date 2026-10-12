@@ -24,7 +24,8 @@ func Pager(ctx context.Context, raw []byte) (*Snapshot, error) {
 	root, _ := Command(ctx, "rev-parse", "--show-toplevel").Output()
 	snapshot := &Snapshot{
 		Repository: strings.TrimSpace(string(root)), Arguments: []string{},
-		CreatedAt: time.Now().UTC().Format(time.RFC3339), Files: sortFiles(files),
+		RepositoryDisplay: repositoryDisplay(strings.TrimSpace(string(root))),
+		CreatedAt:         time.Now().UTC().Format(time.RFC3339), Files: sortFiles(files),
 	}
 	return snapshot, nil
 }
