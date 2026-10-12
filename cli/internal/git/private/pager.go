@@ -28,7 +28,7 @@ type patchHunk struct {
 // Pager builds a snapshot from supplied Git output without rerunning the diff.
 // Unsupported patches return an error so the CLI can print the original bytes.
 func Pager(ctx context.Context, raw []byte) (*Snapshot, error) {
-	files, err := parseFiles(terminalColor.ReplaceAllString(string(raw), ""))
+	files, err := ParseFiles(terminalColor.ReplaceAllString(string(raw), ""))
 	if err == nil {
 		for _, file := range files {
 			if _, _, parseErr := parseHunks(file.Patch); parseErr != nil {
@@ -51,7 +51,7 @@ func Pager(ctx context.Context, raw []byte) (*Snapshot, error) {
 	root, _ := Command(ctx, "rev-parse", "--show-toplevel").Output()
 	snapshot := &Snapshot{
 		Repository: strings.TrimSpace(string(root)), Arguments: []string{},
-		CreatedAt: time.Now().UTC().Format(time.RFC3339), Files: sortFiles(files),
+		CreatedAt: time.Now().UTC().Format(time.RFC3339), Files: SortFiles(files),
 	}
 	return snapshot, nil
 }
