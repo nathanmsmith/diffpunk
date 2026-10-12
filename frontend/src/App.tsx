@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FileSection } from './FileSection';
 import { Sidebar } from './Sidebar';
-import { Toolbar } from './Toolbar';
+import { Topnav } from './Topnav';
 import type { Layout, Snapshot, ViewOptions } from './types';
 
 type LoadState =
@@ -80,7 +80,7 @@ export function App() {
 
   return (
     <>
-      <Toolbar
+      <Topnav
         repository={repository}
         repositoryPath={snapshot?.repository}
         layout={layout}

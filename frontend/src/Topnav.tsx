@@ -8,7 +8,7 @@ interface Props {
   onLayoutChange: (layout: Layout) => void;
 }
 
-export function Toolbar({
+export function Topnav({
   repository,
   repositoryPath,
   layout,
