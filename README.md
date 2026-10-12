@@ -36,5 +36,7 @@ dp --staged           # staged changes
 dp HEAD               # working tree compared with HEAD
 dp main...HEAD        # branch changes since the merge base
 dp -U10 -- src/       # more context, limited to a path
-dp --no-watch         # frozen diff
 ```
+
+Standalone mode watches for changes and refreshes the diff automatically. Pager
+mode displays the diff supplied by Git without watching.
