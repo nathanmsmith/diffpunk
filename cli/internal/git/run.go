@@ -11,7 +11,7 @@ import (
 
 // Run runs git diff and builds a snapshot with full-file context.
 // Git diagnostics are written to diagnostics.
-// Unsupported patch formats are returned as raw output; an empty diff has no snapshot.
+// Unsupported patch formats are returned as raw output; an empty diff has an empty snapshot.
 func Run(ctx context.Context, args []string, diagnostics io.Writer) (*Snapshot, string, error) {
 	cmd := Command(ctx, patchArgs(args, false)...)
 	cmd.Stderr = diagnostics
@@ -48,9 +48,9 @@ func Run(ctx context.Context, args []string, diagnostics io.Writer) (*Snapshot, 
 	}
 	loadMetadataContents(ctx, args, files)
 	rootCmd := Command(ctx, "rev-parse", "--show-toplevel")
-	root, _ := rootCmd.Output()
-	if len(files) == 0 {
-		return nil, "", nil
+	root, err := rootCmd.Output()
+	if err != nil {
+		return nil, "", err
 	}
 	return &Snapshot{
 		Repository: strings.TrimSpace(string(root)), Arguments: append([]string{}, args...),

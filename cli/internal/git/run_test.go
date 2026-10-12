@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func testRepo(t *testing.T) string {
@@ -193,10 +194,21 @@ func TestGitOutputPreserved(t *testing.T) {
 }
 
 func TestEmptyDiff(t *testing.T) {
-	testRepo(t)
-	snapshot, raw, err := Run(context.Background(), nil, os.Stderr)
-	if err != nil || snapshot != nil || raw != "" {
+	root := testRepo(t)
+	root, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	args := []string{"--", "missing.txt"}
+	snapshot, raw, err := Run(context.Background(), args, os.Stderr)
+	if err != nil || snapshot == nil || raw != "" {
 		t.Fatalf("empty diff: %v %q %v", snapshot, raw, err)
+	}
+	if snapshot.Files == nil || len(snapshot.Files) != 0 || snapshot.Repository != root || !reflect.DeepEqual(snapshot.Arguments, args) {
+		t.Fatalf("empty snapshot: %#v", snapshot)
+	}
+	if _, err := time.Parse(time.RFC3339, snapshot.CreatedAt); err != nil {
+		t.Fatalf("invalid creation time: %v", err)
 	}
 }
 

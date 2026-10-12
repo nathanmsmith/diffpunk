@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
 
 	"diff-punk/cli/internal/git"
 	"diff-punk/cli/internal/server"
@@ -63,20 +62,6 @@ func run() int {
 		fmt.Print(raw)
 		return 0
 	}
-	if snapshot == nil {
-		root, err := git.Command(ctx, "rev-parse", "--show-toplevel").Output()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "diff punk:", err)
-			return 1
-		}
-		snapshot = &git.Snapshot{
-			Repository: strings.TrimSpace(string(root)),
-			Arguments:  args,
-			CreatedAt:  time.Now().UTC().Format(time.RFC3339),
-			Files:      []git.File{},
-		}
-	}
-	repository := snapshot.Repository
 	refresh := func(ctx context.Context) (*git.Snapshot, error) {
 		var diagnostics bytes.Buffer
 		next, raw, err := git.Run(ctx, args, &diagnostics)
@@ -88,14 +73,6 @@ func run() int {
 		}
 		if raw != "" {
 			return nil, fmt.Errorf("comparison produced an unsupported patch format")
-		}
-		if next == nil {
-			next = &git.Snapshot{
-				Repository: repository,
-				Arguments:  args,
-				CreatedAt:  time.Now().UTC().Format(time.RFC3339),
-				Files:      []git.File{},
-			}
 		}
 		return next, nil
 	}
