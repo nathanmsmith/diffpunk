@@ -101,9 +101,6 @@ export function App() {
     ? (snapshot.repository.split('/').filter(Boolean).at(-1) ??
       snapshot.repository)
     : '';
-  useEffect(() => {
-    if (snapshot) document.title = `${repository} · diff punk`;
-  }, [snapshot, repository]);
 
   return (
     <div className="flex min-h-dvh flex-col">
