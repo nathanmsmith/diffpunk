@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { processFile } from '@pierre/diffs';
 import { cn } from 'cn';
-import type { Snapshot } from '../types';
+import type { ProcessedSnapshot } from '../types';
 import { LineStats } from './LineStats';
 
 interface Props {
-  snapshot?: Snapshot;
+  snapshot?: ProcessedSnapshot;
   activeFile?: string;
 }
 
@@ -35,23 +34,18 @@ export function Sidebar({ snapshot, activeFile }: Props) {
     const files = (snapshot?.files ?? []).map((file) => {
       const binary = /^(Binary files |GIT binary patch\r?$)/m.test(file.patch);
       if (binary) return { file, binary };
-      try {
-        const patch = processFile(file.patch, { throwOnError: true });
-        if (!patch) return { file, binary };
-        const stats = patch.hunks.reduce(
-          (total, hunk) => ({
-            additions: total.additions + hunk.additionLines,
-            deletions: total.deletions + hunk.deletionLines,
-          }),
-          { additions: 0, deletions: 0 },
-        );
-        additions += stats.additions;
-        deletions += stats.deletions;
-        return { file, binary, stats };
-      } catch (error) {
-        console.error(error);
-        return { file, binary };
-      }
+      const patch = file.diff;
+      if (!patch) return { file, binary };
+      const stats = patch.hunks.reduce(
+        (total, hunk) => ({
+          additions: total.additions + hunk.additionLines,
+          deletions: total.deletions + hunk.deletionLines,
+        }),
+        { additions: 0, deletions: 0 },
+      );
+      additions += stats.additions;
+      deletions += stats.deletions;
+      return { file, binary, stats };
     });
     return { files, additions, deletions };
   }, [snapshot?.files]);

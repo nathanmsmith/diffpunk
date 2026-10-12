@@ -3,24 +3,15 @@ import { useMemo, useState } from 'react';
 import { hydratePartialDiff, processFile } from '@pierre/diffs';
 import { FileSectionHeader } from './FileSectionHeader';
 import { File, FileDiff } from '@pierre/diffs/react';
-import type { FileSnapshot, ViewOptions } from '../types';
+import type { ProcessedFileSnapshot, ViewOptions } from '../types';
 
 interface Props {
-  file: FileSnapshot;
+  file: ProcessedFileSnapshot;
   options: ViewOptions;
 }
 
 export function FileSection({ file, options }: Props) {
-  const patch = useMemo(() => {
-    try {
-      return processFile(file.patch, {
-        throwOnError: true,
-      });
-    } catch (error) {
-      console.error(error);
-      return undefined;
-    }
-  }, [file.patch, file.name]);
+  const patch = file.diff;
   const [expanded, setExpanded] = useState(false);
   const [review, setReview] = useState({ patch: file.patch, viewed: false });
   if (review.patch !== file.patch) {

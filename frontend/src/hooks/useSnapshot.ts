@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { Snapshot } from '../types';
+import { processFile } from '@pierre/diffs';
+import type { ProcessedSnapshot, Snapshot } from '../types';
 
 type LoadState =
   | { status: 'loading' }
-  | { status: 'loaded'; snapshot: Snapshot }
+  | { status: 'loaded'; snapshot: ProcessedSnapshot }
   | { status: 'error'; message: string };
 
 export function useSnapshot() {
@@ -34,8 +35,19 @@ export function useSnapshot() {
           throw new Error(`Could not load snapshot (${response.status})`);
         const snapshot: Snapshot = await response.json();
         if (!controller.signal.aborted) {
+          const files = snapshot.files.map((file) => {
+            try {
+              return {
+                ...file,
+                diff: processFile(file.patch, { throwOnError: true }),
+              };
+            } catch (error) {
+              console.error(error);
+              return { ...file, diff: undefined };
+            }
+          });
           loaded = true;
-          setLoad({ status: 'loaded', snapshot });
+          setLoad({ status: 'loaded', snapshot: { ...snapshot, files } });
           setRefreshError(snapshot.refreshError);
         }
       } catch (error) {
