@@ -12,13 +12,13 @@ export function Button({
 }: Props) {
   const styles =
     variant === 'layout'
-      ? 'border-0 bg-transparent px-2.5 py-control-y text-muted aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:shadow-layout mobile:px-control-mobile-x mobile:text-meta'
-      : 'border border-solid border-border bg-surface px-2.5 py-control-y text-fg hover:bg-hover';
+      ? 'border-0 bg-transparent px-2.5 py-1.5 text-muted aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:shadow-sm mobile:px-2 mobile:text-xs'
+      : 'border border-solid border-border bg-surface px-2.5 py-1.5 text-fg hover:bg-hover';
 
   return (
     <button
       {...props}
-      className={cn('cursor-pointer rounded-control', styles, className)}
+      className={cn('cursor-pointer rounded-md', styles, className)}
     />
   );
 }

@@ -23,7 +23,7 @@ export function Topnav({
         'z-10',
         'flex',
         'items-center',
-        'py-4',
+        'h-18',
         'px-6',
         'mobile:px-3',
         'gap-6',
@@ -38,10 +38,10 @@ export function Topnav({
       <h1
         className={cn(
           'shrink-0',
-          'text-brand',
-          'leading-brand',
-          'font-brand',
-          'tracking-brand',
+          'text-xl',
+          'leading-none',
+          'font-extrabold',
+          'tracking-tight',
           'text-fg',
           'no-underline',
           'font-mono',
@@ -57,7 +57,7 @@ export function Topnav({
           'flex-1',
           'truncate',
           'text-muted',
-          'mobile:text-meta',
+          'mobile:text-xs',
         )}
         id="repository"
         title={repositoryPath}
@@ -69,7 +69,7 @@ export function Topnav({
           'flex',
           'shrink-0',
           'gap-0.5',
-          'rounded-panel',
+          'rounded-lg',
           'border',
           'border-solid',
           'border-border',
