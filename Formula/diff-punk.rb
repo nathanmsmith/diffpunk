@@ -8,11 +8,13 @@ class DiffPunk < Formula
   depends_on "git"
 
   def install
+    # Frontend build
     system "npm", "ci", "--cache=#{buildpath}/.npm"
     system "npm", "run", "build"
 
+    # Cli build
     ENV["CGO_ENABLED"] = "0"
-    system "go", "build", *std_go_args(ldflags: [
+    system "go", "build", *std_go_args(output: bin/"dp", ldflags: [
       "-X main.version=#{version}",
       "-X main.development=false",
     ]), "./cli"
@@ -22,10 +24,10 @@ class DiffPunk < Formula
 
   def caveats
     <<~EOS
-      Run diff-punk inside a Git repository with the arguments you would pass to git diff:
-        diff-punk
-        diff-punk --staged
-        diff-punk main...HEAD
+      Run dp inside a Git repository with the arguments you would pass to git diff:
+        dp
+        dp --staged
+        dp main...HEAD
 
       The browser viewer runs until you press Ctrl-C in the terminal.
     EOS
