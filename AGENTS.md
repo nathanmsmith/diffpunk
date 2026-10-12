@@ -1,1 +1,1 @@
-* don't run tests
+- `make test` all changes

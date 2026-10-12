@@ -27,6 +27,8 @@ for (const key of [
   'getComputedStyle',
   'requestAnimationFrame',
   'cancelAnimationFrame',
+  'setTimeout',
+  'clearTimeout',
   'matchMedia',
 ]) {
   const value = key === 'window' ? window : window[key];
@@ -46,6 +48,20 @@ for (const key of Object.getOwnPropertyNames(window)) {
     });
   }
 }
+const sessions = [];
+globalThis.EventSource = class extends window.EventTarget {
+  closed = false;
+
+  constructor(url) {
+    super();
+    assert.equal(url, './session');
+    sessions.push(this);
+  }
+
+  close() {
+    this.closed = true;
+  }
+};
 const html = await readFile('cli/assets/dist/index.html', 'utf8');
 window.document.write(html);
 const patch = `diff --git a/foo.ts b/foo.ts\nindex 1111111..2222222 100644\n--- a/foo.ts\n+++ b/foo.ts\n@@ -10,1 +10,1 @@\n-const value = 1;\n+const value = 2;\n`;
@@ -106,7 +122,7 @@ try {
   releaseSnapshot();
   if (scenario !== 'viewer') {
     await waitFor(() => !window.document.getElementById('loading'));
-    const message = window.document.querySelector('#diffs .empty')?.textContent;
+    const message = window.document.getElementById('diffs').textContent;
     if (scenario === 'empty') {
       assert.equal(message, 'No changes.');
       assert.equal(
@@ -183,21 +199,22 @@ try {
     const rename = window.document.querySelector(
       'section[data-path="old → new.txt"]',
     );
+    const summary = rename.querySelector('pre').parentElement;
     rename.querySelector('button').click();
     await waitFor(() =>
       rename
         .querySelector('.diff-host')
         ?.shadowRoot?.textContent.includes('unchanged rename'),
     );
-    assert.equal(rename.querySelector('.file-summary').hidden, true);
+    assert.equal(summary.hidden, true);
     assert.equal(
       rename.querySelector('.diff-host').shadowRoot.adoptedStyleSheets.length,
       1,
       'Full-file stylesheet is missing',
     );
     rename.querySelector('button').click();
-    await waitFor(() => !rename.querySelector('.file-summary').hidden);
-    assert.equal(rename.querySelector('.file-summary').hidden, false);
+    await waitFor(() => !summary.hidden);
+    assert.equal(summary.hidden, false);
     const links = window.document.querySelectorAll('#files a');
     links[0].click();
     await waitFor(() => links[0].classList.contains('active'));
@@ -222,13 +239,20 @@ try {
       'Filename interpreted as HTML',
     );
     for (const link of window.document.querySelectorAll('#files a')) {
-      assert.ok(window.document.querySelector(link.getAttribute('href')));
+      assert.ok(
+        window.document.getElementById(
+          decodeURIComponent(link.getAttribute('href').slice(1)),
+        ),
+      );
     }
     console.log(
       'DOM checks passed: diff stylesheet, syntax colors, actual diff rendering, full-file expansion/collapse, layout toggle, binary summary, escaped filenames.',
     );
   }
 } finally {
+  window.dispatchEvent(new window.Event('pagehide'));
+  assert.equal(sessions.length, 1);
+  assert.equal(sessions[0].closed, true);
   await window.happyDOM.abort();
 }
 if (scenario === 'viewer') {

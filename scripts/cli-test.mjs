@@ -14,6 +14,7 @@ const git = (...args) =>
 const run = (program, args) =>
   spawnSync(program, args, { cwd: fixture, encoding: 'utf8' });
 let server;
+let serverOutput = '';
 try {
   execFileSync('go', [
     'build',
@@ -26,7 +27,7 @@ try {
   git('config', 'user.name', 'Test');
   git('config', 'user.email', 'test@example.invalid');
   git('config', 'commit.gpgsign', 'false');
-  const empty = run(binary, []);
+  const empty = run(binary, ['--no-watch']);
   assert.equal(empty.status, 0);
   assert.equal(empty.stdout, '');
   assert.equal(empty.stderr, '');
@@ -47,7 +48,7 @@ try {
     ['--', 'missing-file'],
   ]) {
     const expected = run('git', ['--no-pager', 'diff', '--no-color', ...args]);
-    const actual = run(binary, ['--no-color', ...args]);
+    const actual = run(binary, ['--no-watch', '--no-color', ...args]);
     assert.equal(
       actual.status,
       expected.status,
@@ -98,10 +99,13 @@ try {
     DIFF_PUNK_BROWSER_LOG: browserLog,
   };
   delete env.DIFF_PUNK_NO_OPEN;
-  server = spawn(binary, [], {
+  server = spawn(binary, ['--no-watch'], {
     cwd: fixture,
     env,
     stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  server.stderr.on('data', (chunk) => {
+    serverOutput += chunk;
   });
   const url = await new Promise((resolveURL, reject) => {
     let output = '';
@@ -144,9 +148,15 @@ try {
   );
   assert.ok(assets.some((asset) => asset.endsWith('.js')));
   assert.ok(assets.some((asset) => asset.endsWith('.css')));
-  for (const asset of assets)
-    assert.equal((await fetch(new URL(asset, url))).status, 200);
-  assert.equal((await fetch(new URL('/snapshot.json', url))).status, 404);
+  for (const asset of assets) {
+    const response = await fetch(new URL(asset, url));
+    assert.equal(response.status, 200);
+    await response.arrayBuffer();
+  }
+  assert.equal(
+    (await fetch(new URL('/missing/snapshot.json', url))).status,
+    404,
+  );
   const wrongHostStatus = await new Promise((resolveStatus, reject) => {
     const req = request(
       `${url}snapshot.json`,
@@ -182,14 +192,14 @@ try {
   );
   const exited = once(server, 'exit');
   server.kill('SIGINT');
-  assert.equal((await exited)[0], 0);
+  assert.equal((await exited)[0], 0, serverOutput);
   await assert.rejects(fetch(url));
   server = undefined;
   console.log(
     'Executable checks passed: Git output/exit codes, empty diff, default browser launcher, frozen snapshot, embedded assets, request isolation, Ctrl-C.',
   );
 } finally {
-  if (server) {
+  if (server && server.exitCode === null && server.signalCode === null) {
     const exited = once(server, 'exit');
     server.kill('SIGTERM');
     await exited;

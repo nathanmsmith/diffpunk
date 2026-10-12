@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"diff-punk/cli/internal/git"
 	"fmt"
 	"os"
 	"os/exec"
+
+	"diff-punk/cli/internal/git"
 )
 
 func passthrough(ctx context.Context, args []string) int {

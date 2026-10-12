@@ -24,7 +24,7 @@ func prepareDevServer(ctx context.Context, development bool) (*url.URL, func(), 
 	}
 	vite := filepath.Join(root, "node_modules", "vite", "bin", "vite.js")
 	if _, err := os.Stat(vite); err != nil {
-		return nil, noop, fmt.Errorf("Vite is not installed; run npm ci in %s", root)
+		return nil, noop, fmt.Errorf("vite is not installed; run npm ci in %s", root)
 	}
 	childCtx, cancel := context.WithCancel(ctx)
 	cmd := exec.CommandContext(childCtx, "node", vite)
@@ -56,7 +56,7 @@ func prepareDevServer(ctx context.Context, development bool) (*url.URL, func(), 
 		select {
 		case <-exited:
 			cancel()
-			return nil, noop, fmt.Errorf("Vite exited during startup: %v", processErr)
+			return nil, noop, fmt.Errorf("vite exited during startup: %v", processErr)
 		case <-startup.Done():
 			stop()
 			return nil, noop, fmt.Errorf("waiting for Vite: %w", startup.Err())

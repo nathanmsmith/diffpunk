@@ -2,8 +2,9 @@ package server
 
 import (
 	"context"
-	"diff-punk/cli/internal/git"
 	"sync"
+
+	"diff-punk/cli/internal/git"
 )
 
 // Refresh reruns the original comparison. Only one capture runs at a time.

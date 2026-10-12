@@ -42,7 +42,7 @@ func Capture(ctx context.Context, args []string, diagnostics io.Writer) (*Snapsh
 			}
 		}
 	} else {
-		fmt.Fprintln(diagnostics, "diff punk: full-file context unavailable:", strings.TrimSpace(fullErr.String()))
+		_, _ = fmt.Fprintln(diagnostics, "diff punk: full-file context unavailable:", strings.TrimSpace(fullErr.String()))
 	}
 	captureMetadataContents(ctx, args, files)
 	rootCmd := Command(ctx, "rev-parse", "--show-toplevel")

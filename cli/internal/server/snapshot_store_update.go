@@ -2,8 +2,9 @@ package server
 
 import (
 	"bytes"
-	"diff-punk/cli/internal/git"
 	"encoding/json"
+
+	"diff-punk/cli/internal/git"
 )
 
 func (s *snapshotStore) update(snapshot *git.Snapshot, err error) {

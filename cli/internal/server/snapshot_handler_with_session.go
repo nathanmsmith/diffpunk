@@ -1,11 +1,12 @@
 package server
 
 import (
-	"diff-punk/cli/internal/git"
 	"io/fs"
 	"net"
 	"net/http"
 	"net/url"
+
+	"diff-punk/cli/internal/git"
 )
 
 func snapshotHandlerWithSession(snapshot *git.Snapshot, assets fs.FS, address string, devServer *url.URL, session *viewerSession) http.Handler {

@@ -1,8 +1,9 @@
 package server
 
 import (
-	"diff-punk/cli/internal/git"
 	"encoding/json"
+
+	"diff-punk/cli/internal/git"
 )
 
 func newSnapshotStore(snapshot *git.Snapshot, live bool) *snapshotStore {

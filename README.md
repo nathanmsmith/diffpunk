@@ -13,7 +13,7 @@ A local, read-only browser diff viewer. Drop in replacement for `git diff`.
 
 With brew:
 
-````
+```sh
 brew tap nathanmsmith/diffpunk https://github.com/nathanmsmith/diffpunk.git
 brew install --HEAD diffpunk
 ```

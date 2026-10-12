@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"diff-punk/cli/assets"
-	"diff-punk/cli/internal/git"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -12,6 +10,9 @@ import (
 	"os"
 	"syscall"
 	"time"
+
+	"diff-punk/cli/assets"
+	"diff-punk/cli/internal/git"
 )
 
 // Serve runs the local viewer until its session closes or the context is canceled.

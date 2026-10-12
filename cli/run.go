@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"diff-punk/cli/internal/git"
-	"diff-punk/cli/internal/server"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,6 +9,9 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"diff-punk/cli/internal/git"
+	"diff-punk/cli/internal/server"
 )
 
 func run() int {
