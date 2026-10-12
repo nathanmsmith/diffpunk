@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -13,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"strings"
 	"syscall"
 	"time"
 
@@ -51,13 +48,8 @@ func Serve(ctx context.Context, snapshot *git.Snapshot, development bool, refres
 			return fmt.Errorf("viewer assets missing; run npm run build before go build")
 		}
 	}
-	var token [16]byte
-	if _, err := rand.Read(token[:]); err != nil {
-		return err
-	}
-	prefix := "/" + hex.EncodeToString(token[:]) + "/"
 	address := listener.Addr().String()
-	url := "http://" + address + prefix
+	url := "http://localhost:5555/"
 	var refresh Refresh
 	if len(refreshes) > 0 {
 		refresh = refreshes[0]
@@ -68,7 +60,7 @@ func Serve(ctx context.Context, snapshot *git.Snapshot, development bool, refres
 		go store.watch(ctx, refresh)
 	}
 	server := &http.Server{
-		Handler:           snapshotHandlerWithSession(snapshot, assetFS, address, prefix, devServer, session),
+		Handler:           snapshotHandlerWithSession(snapshot, assetFS, address, devServer, session),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	done := make(chan error, 1)
@@ -95,31 +87,34 @@ func Serve(ctx context.Context, snapshot *git.Snapshot, development bool, refres
 	}
 }
 
-func snapshotHandler(snapshot *git.Snapshot, assets fs.FS, address, prefix string, devServer *url.URL) http.Handler {
-	return snapshotHandlerWithSession(snapshot, assets, address, prefix, devServer, nil)
+func snapshotHandler(snapshot *git.Snapshot, assets fs.FS, address string, devServer *url.URL) http.Handler {
+	return snapshotHandlerWithSession(snapshot, assets, address, devServer, nil)
 }
 
-func snapshotHandlerWithSession(snapshot *git.Snapshot, assets fs.FS, address, prefix string, devServer *url.URL, session *viewerSession) http.Handler {
+func snapshotHandlerWithSession(snapshot *git.Snapshot, assets fs.FS, address string, devServer *url.URL, session *viewerSession) http.Handler {
 	var store *snapshotStore
 	if session != nil && session.snapshots != nil {
 		store = session.snapshots
 	} else {
 		store = newSnapshotStore(snapshot, false)
 	}
-	static := http.StripPrefix(prefix, http.FileServer(http.FS(assets)))
+	static := http.FileServer(http.FS(assets))
 	if devServer != nil {
-		static = devFrontend(devServer, prefix)
+		static = devFrontend(devServer)
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// A loopback listener, exact Host, and unguessable URL keep repository
-		// contents inaccessible to unrelated websites and DNS rebinding requests.
-		devRequest := devServer != nil && strings.HasPrefix(r.URL.Path, devBase)
-		if r.Host != address || (!strings.HasPrefix(r.URL.Path, prefix) && !devRequest) {
+		// Restrict local hosts and reject cross-origin requests, including DNS rebinding.
+		_, port, _ := net.SplitHostPort(address)
+		if r.Host != address && r.Host != "localhost:"+port {
 			http.NotFound(w, r)
 			return
 		}
-		if devServer != nil && r.Header.Get("Upgrade") != "" && r.Header.Get("Origin") != "http://"+address {
-			http.Error(w, "Unexpected WebSocket origin", http.StatusForbidden)
+		origin := r.Header.Get("Origin")
+		site := r.Header.Get("Sec-Fetch-Site")
+		if (origin != "" && origin != "http://"+r.Host) ||
+			(site != "" && site != "same-origin" && site != "none") ||
+			(r.Header.Get("Upgrade") != "" && origin != "http://"+r.Host) {
+			http.Error(w, "Unexpected request origin", http.StatusForbidden)
 			return
 		}
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {
@@ -134,10 +129,10 @@ func snapshotHandlerWithSession(snapshot *git.Snapshot, assets fs.FS, address, p
 		if devServer != nil {
 			// Vite injects an inline React Refresh preamble and uses WebSockets.
 			scriptSources += " 'unsafe-inline'"
-			connectSources += " ws://" + address
+			connectSources += " ws://" + r.Host
 		}
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src "+scriptSources+"; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src "+connectSources+"; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'")
-		if session != nil && r.URL.Path == prefix+"session" {
+		if session != nil && r.URL.Path == "/session" {
 			if r.Method != http.MethodGet {
 				w.WriteHeader(http.StatusMethodNotAllowed)
 				return
@@ -145,7 +140,7 @@ func snapshotHandlerWithSession(snapshot *git.Snapshot, assets fs.FS, address, p
 			session.ServeHTTP(w, r)
 			return
 		}
-		if r.URL.Path == prefix+"snapshot.json" {
+		if r.URL.Path == "/snapshot.json" {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			if r.Method == http.MethodGet {
 				_, _ = w.Write(store.read())

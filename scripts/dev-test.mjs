@@ -54,7 +54,7 @@ async function startCLI(executable = binary, args = []) {
     });
     cli.stderr.on('data', (chunk) => {
       output += chunk;
-      const match = output.match(/http:\/\/127\.0\.0\.1:5555\/[a-f0-9]+\//);
+      const match = output.match(/http:\/\/localhost:5555\//);
       if (match) {
         clearTimeout(timer);
         resolveURL({ url: match[0], output });
@@ -193,7 +193,7 @@ try {
   assert.equal(await page.evaluate(() => window.devTestSentinel), 'preserved');
   assert.ok(sockets.length > 0, 'No hot-reload WebSocket connected');
   assert.ok(
-    sockets.every((socket) => socket.startsWith('ws://127.0.0.1:5555/')),
+    sockets.every((socket) => socket.startsWith('ws://localhost:5555/')),
     `WebSocket bypassed Go: ${sockets}`,
   );
   assert.deepEqual(errors, []);

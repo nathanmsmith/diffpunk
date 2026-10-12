@@ -77,20 +77,18 @@ func TestDevFrontendProxy(t *testing.T) {
 		t.Fatal(err)
 	}
 	snapshot := &git.Snapshot{Files: []git.File{{Name: "foo.go", Patch: "frozen"}}}
-	handler := snapshotHandler(snapshot, fstest.MapFS{}, "127.0.0.1:1234", "/secret/", target)
+	handler := snapshotHandler(snapshot, fstest.MapFS{}, "127.0.0.1:1234", target)
 	snapshot.Files[0].Patch = "changed"
 	for _, tc := range []struct {
 		path, host, method, origin, upgrade string
 		status                              int
 		body                                string
 	}{
-		{"/secret/", "127.0.0.1:1234", "GET", "", "", 200, devBase},
+		{"/", "127.0.0.1:1234", "GET", "", "", 200, devBase},
 		{devBase + "src/App.tsx?t=42", "127.0.0.1:1234", "GET", "", "", 200, devBase + "src/App.tsx?t=42"},
-		{"/secret/snapshot.json", "127.0.0.1:1234", "GET", "", "", 200, `"patch":"frozen"`},
-		{"/secret/snapshot.json", "127.0.0.1:1234", "HEAD", "", "", 200, ""},
-		{"/snapshot.json", "127.0.0.1:1234", "GET", "", "", 404, ""},
-		{"/wrong/snapshot.json", "127.0.0.1:1234", "GET", "", "", 404, ""},
-		{"/secret/snapshot.json", "evil.example", "GET", "", "", 404, ""},
+		{"/snapshot.json", "127.0.0.1:1234", "GET", "", "", 200, `"patch":"frozen"`},
+		{"/snapshot.json", "127.0.0.1:1234", "HEAD", "", "", 200, ""},
+		{"/snapshot.json", "evil.example", "GET", "", "", 404, ""},
 		{devBase + "src/App.tsx", "evil.example", "GET", "", "", 404, ""},
 		{devBase, "127.0.0.1:1234", "POST", "", "", 405, ""},
 		{devBase, "127.0.0.1:1234", "GET", "http://evil.example", "websocket", 403, ""},
@@ -112,7 +110,7 @@ func TestDevFrontendProxy(t *testing.T) {
 	}
 	upstream.Close()
 	res := httptest.NewRecorder()
-	handler.ServeHTTP(res, httptest.NewRequest("GET", "http://127.0.0.1:1234/secret/", nil))
+	handler.ServeHTTP(res, httptest.NewRequest("GET", "http://127.0.0.1:1234/", nil))
 	if res.Code != http.StatusBadGateway || !strings.Contains(res.Body.String(), "npm run dev") {
 		t.Fatalf("missing dev server recovery message: %d %s", res.Code, res.Body.String())
 	}

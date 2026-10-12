@@ -111,7 +111,7 @@ try {
     );
     server.stderr.on('data', (chunk) => {
       output += chunk;
-      const match = output.match(/http:\/\/127\.0\.0\.1:\d+\/[a-f0-9]+\//);
+      const match = output.match(/http:\/\/localhost:5555\//);
       if (match) {
         clearTimeout(timeout);
         resolveURL(match[0]);
