@@ -138,20 +138,6 @@ export function Sidebar({ snapshot }: Props) {
           </a>
         ))}
       </nav>
-      <div
-        className={cn(
-          'mx-2.5',
-          'my-6',
-          'whitespace-pre-wrap',
-          'text-xs',
-          'leading-relaxed',
-          'text-muted',
-        )}
-        id="snapshot-time"
-      >
-        {snapshot &&
-          `${snapshot.live ? 'Live' : 'Snapshot'} · ${new Date(snapshot.createdAt).toLocaleTimeString()}\n git diff ${snapshot.arguments.join(' ')}`}
-      </div>
     </aside>
   );
 }
