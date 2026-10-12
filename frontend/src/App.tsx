@@ -36,26 +36,28 @@ export function App() {
       />
       <div className="flex min-h-0 flex-1 mobile:flex-col">
         <Sidebar snapshot={snapshot} />
-        <main className="min-h-0 min-w-0 flex-1 overflow-auto p-6 mobile:p-3">
-          {refreshError && (
-            <div className="p-6 text-muted" role="status">
-              {refreshError} Keeping the last diff; retrying automatically.
-            </div>
-          )}
-          {load.status === 'loading' && (
-            <div className="p-6 text-muted" id="loading">
-              Loading diff…
-            </div>
-          )}
-          {load.status === 'error' && (
-            <div className="p-6 text-muted">{load.message}</div>
-          )}
-          {snapshot?.files.map((file) => (
-            <FileSection key={file.name} file={file} options={options} />
-          ))}
-          {snapshot?.files.length === 0 && (
-            <div className="p-6 text-muted">No changes.</div>
-          )}
+        <main className="min-h-0 min-w-0 flex-1 overflow-auto px-6 mobile:px-3">
+          <div className="py-6 mobile:py-3">
+            {refreshError && (
+              <div className="p-6 text-center text-muted" role="status">
+                {refreshError} Keeping the last diff; retrying automatically.
+              </div>
+            )}
+            {load.status === 'loading' && (
+              <div className="p-6 text-center text-muted" id="loading">
+                Loading diff…
+              </div>
+            )}
+            {load.status === 'error' && (
+              <div className="p-6 text-center text-muted">{load.message}</div>
+            )}
+            {snapshot?.files.map((file) => (
+              <FileSection key={file.name} file={file} options={options} />
+            ))}
+            {snapshot?.files.length === 0 && (
+              <div className="p-6 text-center text-muted">No changes.</div>
+            )}
+          </div>
         </main>
       </div>
     </div>

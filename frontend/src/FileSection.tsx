@@ -85,7 +85,7 @@ export function FileSection({ file, options }: Props) {
       data-path={file.name}
       data-viewed={viewed}
     >
-      <div className="file-header sticky top-18 z-1 flex items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4 py-3 group-viewed:border-b-0 mobile:gap-2 mobile:p-2.5">
+      <div className="file-header sticky top-0 z-1 flex items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4 py-3 group-viewed:border-b-0 mobile:gap-2 mobile:p-2.5">
         <h2 className="m-0 flex-1 font-mono text-sm font-semibold wrap-anywhere">
           {file.previousName
             ? `${file.previousName} → ${file.name}`
@@ -125,12 +125,12 @@ export function FileSection({ file, options }: Props) {
           />
         ) : (
           <>
-            <div className="p-6 text-muted" hidden={expanded}>
+            <div className="p-6 text-center text-muted" hidden={expanded}>
               {file.patch.includes('Binary files ') ||
               file.patch.includes('GIT binary patch')
                 ? 'Binary file changed'
                 : 'File metadata changed'}
-              <pre className="mb-0 mt-3 whitespace-pre-wrap font-mono text-sm leading-relaxed text-fg wrap-anywhere">
+              <pre className="mb-0 mt-3 whitespace-pre-wrap text-left font-mono text-sm leading-relaxed text-fg wrap-anywhere">
                 {file.patch}
               </pre>
             </div>
