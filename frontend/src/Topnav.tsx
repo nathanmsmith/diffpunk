@@ -23,15 +23,16 @@ export function Topnav({
         'z-10',
         'flex',
         'items-center',
+        'py-4',
+        'px-6',
+        'mobile:px-3',
         'gap-6',
+        'mobile:gap-3',
         'border-0',
         'border-b',
         'border-solid',
         'border-border',
         'bg-surface',
-        'px-6',
-        'mobile:gap-3',
-        'mobile:px-3',
       )}
     >
       <h1
