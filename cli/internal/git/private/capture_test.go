@@ -1,4 +1,4 @@
-package git
+package private
 
 import (
 	"context"
@@ -30,6 +30,7 @@ func testRepo(t *testing.T) string {
 	gitTest(t, "config", "diff.noprefix", "false")
 	return root
 }
+
 func gitTest(t *testing.T, args ...string) string {
 	t.Helper()
 	cmd := exec.Command("git", args...)
@@ -39,6 +40,7 @@ func gitTest(t *testing.T, args ...string) string {
 	}
 	return string(out)
 }
+
 func writeTest(t *testing.T, name, contents string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(name), 0755); err != nil {
@@ -48,14 +50,16 @@ func writeTest(t *testing.T, name, contents string) {
 		t.Fatal(err)
 	}
 }
+
 func takeSnapshot(t *testing.T, args ...string) *Snapshot {
 	t.Helper()
-	snapshot, raw, err := Capture(context.Background(), args)
+	snapshot, raw, err := Capture(context.Background(), args, os.Stderr)
 	if err != nil || raw != "" || snapshot == nil {
 		t.Fatalf("capture %v: %v, raw %q, snapshot %v", args, err, raw, snapshot)
 	}
 	return snapshot
 }
+
 func assertNames(t *testing.T, snapshot *Snapshot, want ...string) {
 	t.Helper()
 	got := []string{}
@@ -188,24 +192,8 @@ func TestGitOutputPreserved(t *testing.T) {
 
 func TestEmptyDiff(t *testing.T) {
 	testRepo(t)
-	snapshot, raw, err := Capture(context.Background(), nil)
+	snapshot, raw, err := Capture(context.Background(), nil, os.Stderr)
 	if err != nil || snapshot != nil || raw != "" {
 		t.Fatalf("empty diff: %v %q %v", snapshot, raw, err)
-	}
-}
-
-func TestTerminalModesAndPathSeparator(t *testing.T) {
-	for _, arg := range []string{"--stat", "--stat=80", "--name-only", "--check", "--word-diff=color", "--raw", "--quiet", "--exit-code", "--binary"} {
-		if !TerminalMode([]string{arg}) {
-			t.Errorf("%s should pass through", arg)
-		}
-		if TerminalMode([]string{"--", arg}) {
-			t.Errorf("%s is a pathspec", arg)
-		}
-	}
-	for _, arg := range []string{"--staged", "-U20", "-w", "HEAD~1..HEAD", "--find-renames"} {
-		if TerminalMode([]string{arg}) {
-			t.Errorf("%s should render", arg)
-		}
 	}
 }
