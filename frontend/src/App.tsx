@@ -1,6 +1,6 @@
 import { cn } from 'cn';
 import { useMemo, useRef, useState } from 'react';
-import { FileSection } from './FileSection';
+import { FileSection } from './FileSection/FileSection';
 import { Sidebar } from './Sidebar/Sidebar';
 import { SidebarPanel } from './Sidebar/SidebarPanel';
 import { Header } from './Header';

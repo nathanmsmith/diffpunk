@@ -1,9 +1,10 @@
 import { cn } from 'cn';
 import { useMemo, useState } from 'react';
 import { hydratePartialDiff, processFile } from '@pierre/diffs';
-import { Button } from './Button';
+import { Button } from '../Button';
+import { CopyFileNameButton } from './CopyFileNameButton';
 import { File, FileDiff } from '@pierre/diffs/react';
-import type { FileSnapshot, ViewOptions } from './types';
+import type { FileSnapshot, ViewOptions } from '../types';
 
 interface Props {
   file: FileSnapshot;
@@ -116,20 +117,25 @@ export function FileSection({ file, options }: Props) {
           'mobile:p-2.5',
         )}
       >
-        <h2
-          className={cn(
-            'm-0',
-            'flex-1',
-            'font-mono',
-            'text-sm',
-            'font-semibold',
-            'wrap-anywhere',
-          )}
+        <div
+          className={cn('flex', 'min-w-0', 'flex-1', 'items-center', 'gap-2')}
         >
-          {file.previousName
-            ? `${file.previousName} → ${file.name}`
-            : file.name}
-        </h2>
+          <h2
+            className={cn(
+              'm-0',
+              'min-w-0',
+              'font-mono',
+              'text-sm',
+              'font-semibold',
+              'wrap-anywhere',
+            )}
+          >
+            {file.previousName
+              ? `${file.previousName} → ${file.name}`
+              : file.name}
+          </h2>
+          <CopyFileNameButton name={file.name} />
+        </div>
         <span className={cn('text-xs', 'text-muted')}>{file.kind}</span>
         {canExpand && (
           <Button
