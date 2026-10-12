@@ -86,16 +86,16 @@ export function App() {
         layout={layout}
         onLayoutChange={setLayout}
       />
-      <div className="workspace">
+      <div className="workspace grid grid-cols-workspace mobile:grid-cols-1">
         <Sidebar snapshot={snapshot} />
-        <main id="diffs" aria-label="Diffs">
+        <main className="min-w-0 p-6 mobile:p-3" id="diffs" aria-label="Diffs">
           {load.status === 'loading' && (
-            <div className="empty" id="loading">
+            <div className="p-6 text-muted" id="loading">
               Loading diff…
             </div>
           )}
           {load.status === 'error' && (
-            <div className="empty">{load.message}</div>
+            <div className="p-6 text-muted">{load.message}</div>
           )}
           {snapshot?.files.map((file, index) => (
             <FileSection
@@ -106,7 +106,7 @@ export function App() {
             />
           ))}
           {snapshot?.files.length === 0 && (
-            <div className="empty">No changes.</div>
+            <div className="p-6 text-muted">No changes.</div>
           )}
         </main>
       </div>

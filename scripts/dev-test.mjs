@@ -148,8 +148,8 @@ try {
   await writeFile(
     appFile,
     (await readFile(appFile, 'utf8')).replace(
-      'className="workspace"',
-      'className="workspace refreshed-app"',
+      'className="workspace ',
+      'className="workspace refreshed-app ',
     ),
   );
   await page.locator('.refreshed-app').waitFor();
@@ -157,8 +157,8 @@ try {
   await writeFile(
     sectionFile,
     (await readFile(sectionFile, 'utf8')).replace(
-      'className="file-header"',
-      'className="file-header refreshed-file"',
+      'className="file-header ',
+      'className="file-header refreshed-file ',
     ),
   );
   await section.locator('.refreshed-file').waitFor();

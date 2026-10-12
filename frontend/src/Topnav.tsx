@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
+import { Button } from './Button';
 import type { Layout } from './types';
 
 interface Props {
@@ -36,23 +37,38 @@ export function Topnav({
   }, []);
 
   return (
-    <header className="toolbar" ref={toolbarRef}>
-      <a className="brand" href="#">
+    <header
+      className="sticky top-0 z-10 flex h-toolbar items-center gap-6 border-0 border-b border-solid border-border bg-surface px-6 mobile:h-auto mobile:min-h-toolbar mobile:flex-wrap mobile:gap-3 mobile:px-3 mobile:py-2.5"
+      ref={toolbarRef}
+    >
+      <a
+        className="text-brand font-brand tracking-brand text-fg no-underline"
+        href="#"
+      >
         diff punk
       </a>
-      <div className="repository" id="repository" title={repositoryPath}>
+      <div
+        className="flex-1 truncate text-muted mobile:min-w-repository mobile:text-meta"
+        id="repository"
+        title={repositoryPath}
+      >
         {repository}
       </div>
-      <div className="layouts" role="group" aria-label="Diff layout">
+      <div
+        className="flex shrink-0 gap-0.5 rounded-panel border border-solid border-border bg-bg p-0.75"
+        role="group"
+        aria-label="Diff layout"
+      >
         {(['split', 'unified'] as const).map((mode) => (
-          <button
+          <Button
+            variant="layout"
             key={mode}
             id={mode}
             aria-pressed={mode === layout}
             onClick={() => onLayoutChange(mode)}
           >
             {mode === 'split' ? 'Side-by-side' : 'Unified'}
-          </button>
+          </Button>
         ))}
       </div>
     </header>

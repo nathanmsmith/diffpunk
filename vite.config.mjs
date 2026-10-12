@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'node:url';
 
 // Go probes this endpoint before forwarding frontend requests to Vite.
@@ -10,6 +11,7 @@ export default defineConfig(({ command }) => ({
   base: command === 'serve' ? devBase : './',
   plugins: [
     react(),
+    tailwindcss(),
     {
       name: 'diff-punk-dev-server',
       configureServer(server) {

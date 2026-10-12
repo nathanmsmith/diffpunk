@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { processFile, type FileDiffMetadata } from '@pierre/diffs';
+import { Button } from './Button';
 import { File, FileDiff } from '@pierre/diffs/react';
 import type { FileSnapshot, ViewOptions } from './types';
 
@@ -57,20 +58,21 @@ export function FileSection({ file, index, options }: Props) {
 
   return (
     <section
-      className="file"
+      className="group mb-6 scroll-mt-file overflow-clip rounded-panel border border-solid border-border bg-surface"
       id={`file-${index}`}
       data-path={file.name}
       data-viewed={viewed}
     >
-      <div className="file-header">
-        <h2 className="file-name">
+      <div className="file-header sticky top-toolbar z-1 flex items-center gap-3 border-0 border-b border-solid border-border bg-surface px-4 py-3 group-viewed:border-b-0 mobile:gap-2 mobile:p-2.5">
+        <h2 className="m-0 flex-1 font-mono text-body font-semibold wrap-anywhere">
           {file.previousName
             ? `${file.previousName} → ${file.name}`
             : file.name}
         </h2>
-        <span className="file-kind">{file.kind}</span>
+        <span className="text-meta text-muted">{file.kind}</span>
         {canExpand && (
-          <button
+          <Button
+            className="shrink-0 text-meta"
             aria-expanded={expanded}
             disabled={expansionFailed}
             onClick={toggleExpanded}
@@ -80,17 +82,17 @@ export function FileSection({ file, index, options }: Props) {
               : expanded
                 ? 'Show changes only'
                 : 'Show full file'}
-          </button>
+          </Button>
         )}
-        <button
-          className="mark-viewed"
+        <Button
+          className="mark-viewed shrink-0 text-meta aria-pressed:border-accent aria-pressed:text-accent"
           type="button"
           aria-pressed={viewed}
           aria-label={viewed ? 'Mark as unviewed' : 'Mark as viewed'}
           onClick={() => setViewed(!viewed)}
         >
           {viewed ? '✓ Viewed' : 'Mark as viewed'}
-        </button>
+        </Button>
       </div>
       <div hidden={viewed}>
         {hasDiff ? (
@@ -101,12 +103,14 @@ export function FileSection({ file, index, options }: Props) {
           />
         ) : (
           <>
-            <div className="file-summary" hidden={expanded}>
+            <div className="p-6 text-muted" hidden={expanded}>
               {file.patch.includes('Binary files ') ||
               file.patch.includes('GIT binary patch')
                 ? 'Binary file changed'
                 : 'File metadata changed'}
-              <pre>{file.patch}</pre>
+              <pre className="mb-0 mt-3 whitespace-pre-wrap font-mono text-body leading-relaxed text-fg wrap-anywhere">
+                {file.patch}
+              </pre>
             </div>
             {expanded && (
               <File className="diff-host" file={contents} options={options} />
