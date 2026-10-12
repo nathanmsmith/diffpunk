@@ -1,4 +1,4 @@
-package private
+package git
 
 import (
 	"reflect"
@@ -11,7 +11,7 @@ func TestReviewOrder(t *testing.T) {
 	for i, name := range names {
 		files[i].Name = name
 	}
-	sorted := SortFiles(files)
+	sorted := sortFiles(files)
 	got := make([]string, len(sorted))
 	for i, f := range sorted {
 		got[i] = f.Name
@@ -23,7 +23,7 @@ func TestReviewOrder(t *testing.T) {
 }
 
 func TestPairingDoesNotCrossModules(t *testing.T) {
-	sorted := SortFiles([]File{{Name: "backend/src/foo.go"}, {Name: "frontend/src/foo.go"}, {Name: "frontend/tests/foo_test.go"}, {Name: "backend/tests/foo_test.go"}})
+	sorted := sortFiles([]File{{Name: "backend/src/foo.go"}, {Name: "frontend/src/foo.go"}, {Name: "frontend/tests/foo_test.go"}, {Name: "backend/tests/foo_test.go"}})
 	got := []string{}
 	for _, f := range sorted {
 		got = append(got, f.Name)
@@ -35,14 +35,14 @@ func TestPairingDoesNotCrossModules(t *testing.T) {
 }
 
 func TestAmbiguousTestsRemainUnpaired(t *testing.T) {
-	sorted := SortFiles([]File{{Name: "lib/foo.rb"}, {Name: "src/foo.rb"}, {Name: "test/foo_test.rb"}})
+	sorted := sortFiles([]File{{Name: "lib/foo.rb"}, {Name: "src/foo.rb"}, {Name: "test/foo_test.rb"}})
 	if sorted[2].Name != "test/foo_test.rb" {
 		t.Fatalf("ambiguous test paired: %v", sorted)
 	}
 }
 
 func TestJavaSourceAndTestTrees(t *testing.T) {
-	sorted := SortFiles([]File{{Name: "src/test/java/example/FooTest.java"}, {Name: "src/main/java/example/Foo.java"}, {Name: "src/main/java/example/Bar.java"}})
+	sorted := sortFiles([]File{{Name: "src/test/java/example/FooTest.java"}, {Name: "src/main/java/example/Foo.java"}, {Name: "src/main/java/example/Bar.java"}})
 	if sorted[1].Name != "src/main/java/example/Foo.java" || sorted[2].Name != "src/test/java/example/FooTest.java" {
 		t.Fatalf("Java pairing: %v", sorted)
 	}

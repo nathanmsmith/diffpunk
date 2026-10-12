@@ -1,4 +1,4 @@
-package private
+package git
 
 import (
 	"bytes"
@@ -6,10 +6,10 @@ import (
 	"strings"
 )
 
-// LoadMetadataContents adds full-file context for changes without patch hunks.
+// loadMetadataContents adds full-file context for changes without patch hunks.
 // Pure renames and permission changes have no patch hunks. Their original
 // blobs still let the user inspect the whole unchanged text file.
-func LoadMetadataContents(ctx context.Context, args []string, files []File) {
+func loadMetadataContents(ctx context.Context, args []string, files []File) {
 	wanted := map[string]int{}
 	for i, f := range files {
 		if !strings.Contains(f.Patch, "\n@@ ") && !strings.Contains(f.Patch, "Binary files ") && !strings.Contains(f.Patch, "GIT binary patch") {

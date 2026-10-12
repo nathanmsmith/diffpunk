@@ -1,4 +1,4 @@
-package private
+package git
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 var blobHeader = regexp.MustCompile(`(?m)^index ([0-9a-f]{4,64})\.\.([0-9a-f]{4,64})(?: [0-7]+)?$`)
 
-func ReconstructContext(ctx context.Context, file *File) {
+func reconstructContext(ctx context.Context, file *File) {
 	if strings.Contains(file.Patch, "\nBinary files ") || strings.Contains(file.Patch, "\nGIT binary patch") {
 		return
 	}

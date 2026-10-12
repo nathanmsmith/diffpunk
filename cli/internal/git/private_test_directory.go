@@ -1,4 +1,4 @@
-package private
+package git
 
 func testDirectory(s string) bool {
 	switch s {

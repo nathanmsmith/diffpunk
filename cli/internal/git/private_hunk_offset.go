@@ -1,4 +1,4 @@
-package private
+package git
 
 func hunkOffset(start, count int) int {
 	if count == 0 {

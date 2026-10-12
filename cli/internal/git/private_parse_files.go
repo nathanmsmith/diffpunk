@@ -1,12 +1,12 @@
-package private
+package git
 
 import (
 	"fmt"
 	"strings"
 )
 
-// ParseFiles splits a Git patch into file changes.
-func ParseFiles(patch string) ([]File, error) {
+// parseFiles splits a Git patch into file changes.
+func parseFiles(patch string) ([]File, error) {
 	starts := fileStart.FindAllStringIndex(patch, -1)
 	if len(starts) == 0 || starts[0][0] != 0 || strings.Contains(patch, "\ndiff --cc ") || strings.Contains(patch, "\ndiff --combined ") {
 		return nil, fmt.Errorf("unsupported patch format")

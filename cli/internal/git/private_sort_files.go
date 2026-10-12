@@ -1,4 +1,4 @@
-package private
+package git
 
 import (
 	"path"
@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// SortFiles orders changes by depth and name, placing tests beside their implementations.
-func SortFiles(files []File) []File {
+// sortFiles orders changes by depth and name, placing tests beside their implementations.
+func sortFiles(files []File) []File {
 	less := func(a, b File) bool {
 		da, db := strings.Count(a.Name, "/"), strings.Count(b.Name, "/")
 		if da != db {

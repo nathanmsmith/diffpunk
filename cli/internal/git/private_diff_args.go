@@ -1,4 +1,4 @@
-package private
+package git
 
 func diffArgs(args, controls []string) []string {
 	result := []string{"-c", "diff.noprefix=false", "-c", "diff.mnemonicPrefix=false", "diff"}
