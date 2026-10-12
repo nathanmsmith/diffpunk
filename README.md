@@ -1,4 +1,6 @@
-# diff punk
+# diffpunk
+
+![](./diffpunk.png)
 
 A local, read-only browser viewer for `git diff`. Enable it as Git's diff pager:
 
