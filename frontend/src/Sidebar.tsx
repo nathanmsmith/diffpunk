@@ -21,10 +21,10 @@ export function Sidebar({ snapshot }: Props) {
         CHANGED FILES <span id="file-count">{snapshot?.files.length}</span>
       </div>
       <nav id="files" aria-label="Changed files">
-        {snapshot?.files.map((file, index) => (
+        {snapshot?.files.map((file) => (
           <a
             key={file.name}
-            href={`#file-${index}`}
+            href={`#${encodeURIComponent(`file-${file.name}`)}`}
             className={cn(
               'flex items-start gap-2 rounded-md px-2.5 py-2 text-sm text-fg no-underline hover:bg-hover',
               activeFile === file.name && 'active bg-hover',
@@ -43,7 +43,7 @@ export function Sidebar({ snapshot }: Props) {
         id="snapshot-time"
       >
         {snapshot &&
-          `Snapshot · ${new Date(snapshot.createdAt).toLocaleTimeString()}\n git diff ${snapshot.arguments.join(' ')}`}
+          `${snapshot.live ? 'Live' : 'Snapshot'} · ${new Date(snapshot.createdAt).toLocaleTimeString()}\n git diff ${snapshot.arguments.join(' ')}`}
       </div>
     </aside>
   );

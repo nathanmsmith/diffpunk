@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -78,8 +79,22 @@ func diffArgs(args, controls []string) []string {
 // Capture runs git diff and captures its files and full context.
 // Unsupported patch formats are returned as raw output; an empty diff has no snapshot.
 func Capture(ctx context.Context, args []string) (*Snapshot, string, error) {
+	return capture(ctx, args, os.Stderr)
+}
+
+// CaptureRefresh returns diagnostics to the viewer instead of repeatedly printing them.
+func CaptureRefresh(ctx context.Context, args []string) (*Snapshot, string, error) {
+	var diagnostics bytes.Buffer
+	snapshot, raw, err := capture(ctx, args, &diagnostics)
+	if err != nil && diagnostics.Len() > 0 {
+		err = fmt.Errorf("%w: %s", err, strings.TrimSpace(diagnostics.String()))
+	}
+	return snapshot, raw, err
+}
+
+func capture(ctx context.Context, args []string, diagnostics io.Writer) (*Snapshot, string, error) {
 	cmd := Command(ctx, patchArgs(args, false)...)
-	cmd.Stderr = os.Stderr
+	cmd.Stderr = diagnostics
 	patch, err := cmd.Output()
 	if err != nil {
 		return nil, "", err
@@ -109,7 +124,7 @@ func Capture(ctx context.Context, args []string) (*Snapshot, string, error) {
 			}
 		}
 	} else {
-		fmt.Fprintln(os.Stderr, "diff punk: full-file context unavailable:", strings.TrimSpace(fullErr.String()))
+		fmt.Fprintln(diagnostics, "diff punk: full-file context unavailable:", strings.TrimSpace(fullErr.String()))
 	}
 	captureMetadataContents(ctx, args, files)
 	rootCmd := Command(ctx, "rev-parse", "--show-toplevel")

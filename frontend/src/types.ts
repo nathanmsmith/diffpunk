@@ -13,6 +13,8 @@ export type Snapshot = {
   arguments: string[];
   createdAt: string;
   files: FileSnapshot[];
+  live?: boolean;
+  refreshError?: string;
 };
 export type Layout = 'split' | 'unified';
 export type ViewOptions = Pick<

@@ -6,7 +6,9 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
+	"time"
 
 	"diff-punk/cli/internal/git"
 	"diff-punk/cli/internal/server"
@@ -34,6 +36,20 @@ func run() int {
 		}
 		return runPager(ctx)
 	}
+	watch := true
+	filtered := []string{}
+	paths := false
+	for _, arg := range args {
+		if arg == "--" {
+			paths = true
+		}
+		if !paths && arg == "--no-watch" {
+			watch = false
+			continue
+		}
+		filtered = append(filtered, arg)
+	}
+	args = filtered
 
 	if git.TerminalMode(args) {
 		return passthrough(ctx, args)
@@ -45,7 +61,7 @@ func run() int {
 		return passthrough(ctx, args)
 	}
 
-	snapshot, raw, err := git.Capture(ctx, os.Args[1:])
+	snapshot, raw, err := git.Capture(ctx, args)
 	if err != nil {
 		if e, ok := err.(*exec.ExitError); ok {
 			return e.ExitCode()
@@ -58,9 +74,36 @@ func run() int {
 		return 0
 	}
 	if snapshot == nil {
-		return 0
+		if !watch {
+			return 0
+		}
+		root, err := git.Command(ctx, "rev-parse", "--show-toplevel").Output()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "diff punk:", err)
+			return 1
+		}
+		snapshot = &git.Snapshot{Repository: strings.TrimSpace(string(root)), Arguments: args,
+			CreatedAt: time.Now().UTC().Format(time.RFC3339), Files: []git.File{}}
 	}
-	if err := server.Serve(ctx, snapshot, development == "true"); err != nil {
+	var refresh server.Refresh
+	if watch {
+		repository := snapshot.Repository
+		refresh = func(ctx context.Context) (*git.Snapshot, error) {
+			next, raw, err := git.CaptureRefresh(ctx, args)
+			if err != nil {
+				return nil, err
+			}
+			if raw != "" {
+				return nil, fmt.Errorf("comparison produced an unsupported patch format")
+			}
+			if next == nil {
+				next = &git.Snapshot{Repository: repository, Arguments: args,
+					CreatedAt: time.Now().UTC().Format(time.RFC3339), Files: []git.File{}}
+			}
+			return next, nil
+		}
+	}
+	if err := server.Serve(ctx, snapshot, development == "true", refresh); err != nil {
 		fmt.Fprintln(os.Stderr, "diff punk:", err)
 		return 1
 	}

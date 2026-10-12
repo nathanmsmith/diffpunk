@@ -6,16 +6,14 @@ import type { FileSnapshot, ViewOptions } from './types';
 
 interface Props {
   file: FileSnapshot;
-  index: number;
   options: ViewOptions;
 }
 
-export function FileSection({ file, index, options }: Props) {
+export function FileSection({ file, options }: Props) {
   const patch = useMemo(() => {
     try {
       return processFile(file.patch, {
         throwOnError: true,
-        cacheKey: `patch-${file.name}`,
       });
     } catch (error) {
       console.error(error);
@@ -23,13 +21,16 @@ export function FileSection({ file, index, options }: Props) {
     }
   }, [file.patch, file.name]);
   const [expanded, setExpanded] = useState(false);
-  const [viewed, setViewed] = useState(false);
+  const [review, setReview] = useState({ patch: file.patch, viewed: false });
+  if (review.patch !== file.patch) {
+    setReview({ patch: file.patch, viewed: false });
+  }
+  const viewed = review.patch === file.patch && review.viewed;
   const { full, expandablePatch } = useMemo(() => {
     if (!patch || !file.fullPatch) return {};
     try {
       const full = processFile(file.fullPatch, {
         throwOnError: true,
-        cacheKey: `full-${file.name}`,
       });
       if (!full) return {};
       const expandablePatch = patch.isPartial
@@ -50,7 +51,9 @@ export function FileSection({ file, index, options }: Props) {
       return {};
     }
   }, [patch, file.fullPatch, file.name, file.previousName]);
-  const [expansionFailed, setExpansionFailed] = useState(false);
+  const [failedPatch, setFailedPatch] = useState<string>();
+  const expansionFailed =
+    failedPatch !== undefined && failedPatch === (file.fullPatch ?? '');
   const hasDiff = patch !== undefined && patch.hunks.length > 0;
   const canExpand = hasDiff
     ? Boolean(file.fullPatch && file.fullPatch !== file.patch)
@@ -59,7 +62,6 @@ export function FileSection({ file, index, options }: Props) {
     () => ({
       name: file.name,
       contents: file.fullContent ?? '',
-      cacheKey: `metadata-${file.name}`,
     }),
     [file.name, file.fullContent],
   );
@@ -71,7 +73,7 @@ export function FileSection({ file, index, options }: Props) {
       }
       setExpanded(!expanded);
     } catch (error) {
-      setExpansionFailed(true);
+      setFailedPatch(file.fullPatch ?? '');
       console.error(error);
     }
   }
@@ -79,7 +81,7 @@ export function FileSection({ file, index, options }: Props) {
   return (
     <section
       className="group mb-6 scroll-mt-24 overflow-clip rounded-lg border border-solid border-border bg-surface"
-      id={`file-${index}`}
+      id={`file-${file.name}`}
       data-path={file.name}
       data-viewed={viewed}
     >
@@ -109,7 +111,7 @@ export function FileSection({ file, index, options }: Props) {
           type="button"
           aria-pressed={viewed}
           aria-label={viewed ? 'Mark as unviewed' : 'Mark as viewed'}
-          onClick={() => setViewed(!viewed)}
+          onClick={() => setReview({ patch: file.patch, viewed: !viewed })}
         >
           {viewed ? '✓ Viewed' : 'Mark as viewed'}
         </Button>

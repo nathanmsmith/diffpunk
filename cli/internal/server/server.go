@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -23,7 +22,7 @@ import (
 )
 
 // Serve runs the local viewer until its session closes or the context is canceled.
-func Serve(ctx context.Context, snapshot *git.Snapshot, development bool) error {
+func Serve(ctx context.Context, snapshot *git.Snapshot, development bool, refreshes ...Refresh) error {
 	ctx, cancelSession := context.WithCancel(ctx)
 	defer cancelSession()
 	listener, err := net.Listen("tcp", "127.0.0.1:5555")
@@ -59,7 +58,15 @@ func Serve(ctx context.Context, snapshot *git.Snapshot, development bool) error 
 	prefix := "/" + hex.EncodeToString(token[:]) + "/"
 	address := listener.Addr().String()
 	url := "http://" + address + prefix
-	session := &viewerSession{ctx: ctx, stop: cancelSession}
+	var refresh Refresh
+	if len(refreshes) > 0 {
+		refresh = refreshes[0]
+	}
+	store := newSnapshotStore(snapshot, refresh != nil)
+	session := &viewerSession{ctx: ctx, stop: cancelSession, snapshots: store}
+	if refresh != nil {
+		go store.watch(ctx, refresh)
+	}
 	server := &http.Server{
 		Handler:           snapshotHandlerWithSession(snapshot, assetFS, address, prefix, devServer, session),
 		ReadHeaderTimeout: 5 * time.Second,
@@ -93,7 +100,12 @@ func snapshotHandler(snapshot *git.Snapshot, assets fs.FS, address, prefix strin
 }
 
 func snapshotHandlerWithSession(snapshot *git.Snapshot, assets fs.FS, address, prefix string, devServer *url.URL, session *viewerSession) http.Handler {
-	data, _ := json.Marshal(snapshot)
+	var store *snapshotStore
+	if session != nil && session.snapshots != nil {
+		store = session.snapshots
+	} else {
+		store = newSnapshotStore(snapshot, false)
+	}
 	static := http.StripPrefix(prefix, http.FileServer(http.FS(assets)))
 	if devServer != nil {
 		static = devFrontend(devServer, prefix)
@@ -136,7 +148,7 @@ func snapshotHandlerWithSession(snapshot *git.Snapshot, assets fs.FS, address, p
 		if r.URL.Path == prefix+"snapshot.json" {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			if r.Method == http.MethodGet {
-				_, _ = w.Write(data)
+				_, _ = w.Write(store.read())
 			}
 			return
 		}
