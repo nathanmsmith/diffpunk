@@ -25,3 +25,12 @@ jobs:
           version: v2.13.2
           install-only: true
       - run: make test browser-test
+      - name: Upload CLI coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.out
+          disable_search: true
+          flags: cli
+          fail_ci_if_error: true

@@ -16,7 +16,7 @@ test: build lint-go
 	npm run lint
 	npm run format:check
 	npm run typecheck
-	go test -race ./...
+	go test -race -covermode=atomic -coverpkg=./cli/... -coverprofile=coverage.out ./cli/...
 	npm run test:dom
 	npm run test:cli
 

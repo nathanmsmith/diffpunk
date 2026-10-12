@@ -3,3 +3,4 @@ bin/
 release/
 cli/assets/dist/*
 !cli/assets/dist/.gitkeep
+/coverage.out
