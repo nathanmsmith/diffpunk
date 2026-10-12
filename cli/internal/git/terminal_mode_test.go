@@ -19,3 +19,14 @@ func TestTerminalModesAndPathSeparator(t *testing.T) {
 		}
 	}
 }
+
+func TestTerminalStatOptions(t *testing.T) {
+	for _, arg := range []string{"--stat-width=80", "--stat-name-width=40", "--stat-count=5"} {
+		if !TerminalMode([]string{arg}) {
+			t.Errorf("%s should pass through", arg)
+		}
+		if TerminalMode([]string{"--", arg}) {
+			t.Errorf("%s is a pathspec", arg)
+		}
+	}
+}

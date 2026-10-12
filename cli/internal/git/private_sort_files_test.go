@@ -47,3 +47,19 @@ func TestJavaSourceAndTestTrees(t *testing.T) {
 		t.Fatalf("Java pairing: %v", sorted)
 	}
 }
+
+func TestAdjacentTestWinsOverMirroredSource(t *testing.T) {
+	files := sortFiles([]File{{Name: "lib/foo.go"}, {Name: "src/foo.go"}, {Name: "lib/foo_test.go"}})
+	want := []File{{Name: "lib/foo.go"}, {Name: "lib/foo_test.go"}, {Name: "src/foo.go"}}
+	if !reflect.DeepEqual(files, want) {
+		t.Fatalf("got %v; want %v", files, want)
+	}
+}
+
+func TestDuplicateAdjacentOwnersRemainAmbiguous(t *testing.T) {
+	files := sortFiles([]File{{Name: "foo.go"}, {Name: "foo.go"}, {Name: "foo_test.go"}, {Name: "other.go"}})
+	want := []File{{Name: "foo.go"}, {Name: "foo.go"}, {Name: "other.go"}, {Name: "foo_test.go"}}
+	if !reflect.DeepEqual(files, want) {
+		t.Fatalf("got %v; want %v", files, want)
+	}
+}
