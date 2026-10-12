@@ -1,13 +1,16 @@
 package private
 
 import (
+	"regexp"
 	"strings"
 )
+
+var pagerFileHeader = regexp.MustCompile(`^diff --git ("[abiwco]/(?:[^"\\]|\\.)*"|[abiwco]/.+?) ("[abiwco]/(?:[^"\\]|\\.)*"|[abiwco]/.+?)$`)
 
 // The browser's diff parser requires a/ and b/ transport prefixes. Git can
 // supply mnemonic prefixes in pager mode; normalize only file headers, leaving
 // the supplied hunk bodies and unprefixed rename/copy metadata intact.
-func normalizePagerPrefixes(patch string) string {
+func NormalizePagerPrefixes(patch string) string {
 	lines := strings.SplitAfter(patch, "\n")
 	for i, line := range lines {
 		if strings.HasPrefix(line, "@@") {

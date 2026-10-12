@@ -2,9 +2,23 @@ package private
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+var hunkHeader = regexp.MustCompile(`^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@[^\n]*\n?$`)
+
+type patchLine struct {
+	kind byte
+	text string // Includes the newline, unless Git supplied a no-newline marker.
+}
+
+type patchHunk struct {
+	oldStart, oldCount int
+	newStart, newCount int
+	lines              []patchLine
+}
 
 // parseHunks rejects word/combined diffs and malformed counts before the browser
 // is opened. Binary and metadata-only changes have no text hunks.

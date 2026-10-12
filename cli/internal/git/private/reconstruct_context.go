@@ -3,10 +3,13 @@ package private
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
-func reconstructContext(ctx context.Context, file *File) {
+var blobHeader = regexp.MustCompile(`(?m)^index ([0-9a-f]{4,64})\.\.([0-9a-f]{4,64})(?: [0-7]+)?$`)
+
+func ReconstructContext(ctx context.Context, file *File) {
 	if strings.Contains(file.Patch, "\nBinary files ") || strings.Contains(file.Patch, "\nGIT binary patch") {
 		return
 	}
