@@ -8,6 +8,8 @@
   --color-border: var(--border);
   --color-hover: var(--hover);
   --color-accent: var(--accent);
+  --color-addition: var(--addition);
+  --color-deletion: var(--deletion);
 }
 
 @custom-variant mobile (@media (max-width: 800px));
@@ -25,6 +27,8 @@
     --border: #e4e6e9;
     --hover: #f0f1f3;
     --accent: #6b57d9;
+    --addition: #16723c;
+    --deletion: #c12d35;
     font-family: var(--font-sans);
     font-size: 13px;
   }
@@ -37,6 +41,8 @@
       --border: #2c2e35;
       --hover: #272930;
       --accent: #b09cff;
+      --addition: #75d69a;
+      --deletion: #ff9098;
     }
   }
   * {

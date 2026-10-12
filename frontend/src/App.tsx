@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FileSection } from './FileSection';
-import { Sidebar } from './Sidebar';
+import { Sidebar } from './Sidebar/Sidebar';
 import { Topnav } from './Topnav';
 import type { Layout, ViewOptions } from './types';
 import { useSnapshot } from './hooks/useSnapshot';
