@@ -11,7 +11,8 @@ import (
 
 // Run runs git diff and builds a snapshot with full-file context.
 // Git diagnostics are written to diagnostics.
-// Unsupported patch formats are returned as raw output; an empty diff has an empty snapshot.
+// Unsupported patch formats are returned as raw output. Working-tree and staged
+// snapshots also include untracked files for the browser's optional filter.
 func Run(ctx context.Context, args []string, diagnostics io.Writer) (*Snapshot, string, error) {
 	cmd := Command(ctx, patchArgs(args, false)...)
 	cmd.Stderr = diagnostics
@@ -52,10 +53,22 @@ func Run(ctx context.Context, args []string, diagnostics io.Writer) (*Snapshot, 
 	if err != nil {
 		return nil, "", err
 	}
+	untracked, paths, relativePrefix, err := untrackedSelection(ctx, args)
+	if err != nil {
+		return nil, "", err
+	}
+	if untracked != nil {
+		additional, err := loadUntracked(ctx, strings.TrimSpace(string(root)), paths, relativePrefix, false)
+		if err != nil {
+			return nil, "", err
+		}
+		files = append(files, additional...)
+	}
 	return &Snapshot{
 		Repository: strings.TrimSpace(string(root)), Arguments: append([]string{}, args...),
 		RepositoryDisplay: repositoryDisplay(strings.TrimSpace(string(root))),
 		CreatedAt:         time.Now().UTC().Format(time.RFC3339),
 		Files:             sortFiles(files),
+		Untracked:         untracked,
 	}, "", nil
 }

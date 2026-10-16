@@ -28,7 +28,12 @@ func TestRunPreservesSnapshotWhenFullContextUnavailable(t *testing.T) {
   exit 1
  fi
  if [ "$arg" = "rev-parse" ]; then
-  echo '/repository'
+  for option do
+   if [ "$option" = "--show-toplevel" ]; then echo '/repository'; fi
+  done
+  exit 0
+ fi
+ if [ "$arg" = "ls-files" ]; then
   exit 0
  fi
  done

@@ -19,11 +19,17 @@ type File struct {
 
 // Snapshot is the frozen diff sent to the browser viewer.
 type Snapshot struct {
-	Repository        string   `json:"repository"`
-	RepositoryDisplay string   `json:"repositoryDisplay,omitempty"`
-	Arguments         []string `json:"arguments"`
-	CreatedAt         string   `json:"createdAt"`
-	Files             []File   `json:"files"`
+	Repository        string            `json:"repository"`
+	RepositoryDisplay string            `json:"repositoryDisplay,omitempty"`
+	Arguments         []string          `json:"arguments"`
+	CreatedAt         string            `json:"createdAt"`
+	Files             []File            `json:"files"`
+	Untracked         *UntrackedOptions `json:"untracked,omitempty"`
+}
+
+// UntrackedOptions is present when the viewer can include untracked files.
+type UntrackedOptions struct {
+	DefaultIncluded bool `json:"defaultIncluded"`
 }
 
 func repositoryDisplay(path string) string {

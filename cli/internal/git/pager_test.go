@@ -63,7 +63,7 @@ func TestPagerReconstructsFrozenContext(t *testing.T) {
 }
 
 func TestPagerRejectsUnsupportedPatchesAndCancellation(t *testing.T) {
-	for _, patch := range []string{"", "diff --cc file.txt\n", "diff --git a/file.txt b/file.txt\n@@ -1 +1 @@\n!word diff\n"} {
+	for _, patch := range []string{"diff --cc file.txt\n", "diff --git a/file.txt b/file.txt\n@@ -1 +1 @@\n!word diff\n"} {
 		if snapshot, err := Pager(context.Background(), []byte(patch)); err == nil || snapshot != nil {
 			t.Errorf("accepted %q: %#v %v", patch, snapshot, err)
 		}

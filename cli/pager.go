@@ -36,9 +36,6 @@ func runPager(ctx context.Context) int {
 		fmt.Fprintln(os.Stderr, "diff punk:", err)
 		return 1
 	}
-	if len(raw) == 0 {
-		return 0
-	}
 	snapshot, err := git.Pager(ctx, raw)
 	if ctx.Err() != nil {
 		return 0
@@ -48,6 +45,9 @@ func runPager(ctx context.Context) int {
 			fmt.Fprintln(os.Stderr, "diff punk:", err)
 			return 1
 		}
+		return 0
+	}
+	if len(raw) == 0 && len(snapshot.Files) == 0 {
 		return 0
 	}
 	if err := server.Serve(ctx, snapshot, development == "true"); err != nil {

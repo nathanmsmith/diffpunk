@@ -19,10 +19,10 @@ export function useActiveFile(
     const update = () => {
       frame = undefined;
       const top = root.getBoundingClientRect().top + root.clientTop;
-      let current = sections[0]?.dataset.path;
+      let current = sections[0]?.id;
       for (const section of sections) {
         if (section.getBoundingClientRect().top > top + 1) break;
-        current = section.dataset.path;
+        current = section.id;
       }
       setActiveFile(current);
     };

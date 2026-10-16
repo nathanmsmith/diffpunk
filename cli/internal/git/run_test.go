@@ -94,9 +94,9 @@ func TestGitSelectionAndFrozenContext(t *testing.T) {
 	writeTest(t, "foo.go", strings.Join(lines, "\n")+"\n")
 	writeTest(t, "foo_test.go", "changed test\n")
 	writeTest(t, "nested/other.go", "changed other\n")
-	writeTest(t, "untracked.go", "not included\n")
+	writeTest(t, "untracked.go", "untracked\n")
 	unstaged := takeSnapshot(t)
-	assertNames(t, unstaged, "foo.go", "foo_test.go", "nested/other.go")
+	assertNames(t, unstaged, "foo.go", "foo_test.go", "untracked.go", "nested/other.go")
 	if !strings.Contains(unstaged.Files[0].Patch, "-staged\n+working") {
 		t.Fatal("default did not compare index to working tree")
 	}
@@ -104,7 +104,7 @@ func TestGitSelectionAndFrozenContext(t *testing.T) {
 		t.Fatal("full context is incomplete")
 	}
 	staged := takeSnapshot(t, "--staged")
-	assertNames(t, staged, "foo.go")
+	assertNames(t, staged, "foo.go", "untracked.go")
 	if !strings.Contains(staged.Files[0].Patch, "-original\n+staged") {
 		t.Fatal("staged did not compare HEAD to index")
 	}

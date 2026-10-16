@@ -4,6 +4,7 @@ import { hydratePartialDiff, processFile } from '@pierre/diffs';
 import { FileSectionHeader } from './FileSectionHeader';
 import { File, FileDiff } from '@pierre/diffs/react';
 import type { ProcessedFileSnapshot, ViewOptions } from '../types';
+import { fileId } from '../fileId';
 
 interface Props {
   file: ProcessedFileSnapshot;
@@ -82,7 +83,7 @@ export function FileSection({ file, options }: Props) {
         'border-border',
         'bg-surface',
       )}
-      id={`file-${file.name}`}
+      id={fileId(file)}
       data-path={file.name}
       data-viewed={viewed}
     >

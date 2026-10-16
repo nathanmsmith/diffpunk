@@ -15,6 +15,7 @@ export type Snapshot = {
   arguments: string[];
   createdAt: string;
   files: FileSnapshot[];
+  untracked?: { defaultIncluded: boolean };
   live?: boolean;
   refreshError?: string;
 };

@@ -2,10 +2,14 @@ import { useEffect, useMemo, useRef } from 'react';
 import { cn } from 'cn';
 import type { ProcessedSnapshot } from '../types';
 import { LineStats } from './LineStats';
+import { fileId } from '../fileId';
 
 interface Props {
   snapshot?: ProcessedSnapshot;
   activeFile?: string;
+  includeUntracked: boolean;
+  untrackedCount: number;
+  onIncludeUntrackedChange: (include: boolean) => void;
 }
 
 const statuses: Record<string, string> = {
@@ -13,9 +17,16 @@ const statuses: Record<string, string> = {
   deleted: 'D',
   renamed: 'R',
   copied: 'C',
+  untracked: '?',
 };
 
-export function Sidebar({ snapshot, activeFile }: Props) {
+export function Sidebar({
+  snapshot,
+  activeFile,
+  includeUntracked,
+  untrackedCount,
+  onIncludeUntrackedChange,
+}: Props) {
   const sidebar = useRef<HTMLElement>(null);
   useEffect(() => {
     const container = sidebar.current;
@@ -113,13 +124,86 @@ export function Sidebar({ snapshot, activeFile }: Props) {
         >
           LINES <LineStats additions={additions} deletions={deletions} />
         </div>
+        {snapshot?.untracked && (
+          <label
+            className={cn(
+              'mt-4',
+              'flex',
+              'cursor-pointer',
+              'items-center',
+              'justify-between',
+              'gap-3',
+              'text-sm',
+              'text-fg',
+            )}
+          >
+            <span
+              className={cn(
+                'group',
+                'relative',
+                'inline-flex',
+                'w-11',
+                'shrink-0',
+                'rounded-full',
+                'bg-border',
+                'p-0.5',
+                'inset-ring',
+                'inset-ring-fg/5',
+                'outline-offset-2',
+                'outline-accent',
+                'transition-colors',
+                'duration-200',
+                'ease-in-out',
+                'has-checked:bg-accent',
+                'has-focus-visible:outline-2',
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'size-5',
+                  'rounded-full',
+                  'bg-white',
+                  'shadow-xs',
+                  'ring-1',
+                  'ring-black/5',
+                  'transition-transform',
+                  'duration-200',
+                  'ease-in-out',
+                  'group-has-checked:translate-x-5',
+                )}
+              />
+              <input
+                type="checkbox"
+                role="switch"
+                aria-labelledby="include-untracked-label"
+                checked={includeUntracked}
+                onChange={(event) =>
+                  onIncludeUntrackedChange(event.target.checked)
+                }
+                className={cn(
+                  'absolute',
+                  'inset-0',
+                  'size-full',
+                  'cursor-pointer',
+                  'appearance-none',
+                  'focus:outline-hidden',
+                )}
+              />
+            </span>
+            <span id="include-untracked-label" className={cn('font-medium')}>
+              Include {untrackedCount} untracked{' '}
+              {untrackedCount === 1 ? 'file' : 'files'}
+            </span>
+          </label>
+        )}
       </div>
       <nav id="files" aria-label="Changed files">
         {files.map(({ file, binary, stats }) => (
           <a
-            key={file.name}
-            href={`#${encodeURIComponent(`file-${file.name}`)}`}
-            aria-current={activeFile === file.name ? 'location' : undefined}
+            key={fileId(file)}
+            href={`#${encodeURIComponent(fileId(file))}`}
+            aria-current={activeFile === fileId(file) ? 'location' : undefined}
             className={cn(
               'flex',
               'flex-col',
@@ -134,8 +218,8 @@ export function Sidebar({ snapshot, activeFile }: Props) {
               'duration-200',
               'ease-out',
               'hover:bg-hover',
-              activeFile === file.name && 'active',
-              activeFile === file.name && 'bg-hover',
+              activeFile === fileId(file) && 'active',
+              activeFile === fileId(file) && 'bg-hover',
             )}
           >
             <div className={cn('min-w-0', 'flex-1', 'wrap-anywhere')}>
